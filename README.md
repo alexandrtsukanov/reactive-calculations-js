@@ -1,3 +1,3 @@
-# kobeza-core-course-work
+# reactive-calculations-js
 
 READ.ME

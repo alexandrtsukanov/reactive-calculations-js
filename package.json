@@ -1,0 +1,23 @@
+{
+  "name": "reactive-calculations-js",
+  "version": "1.0.0",
+  "description": "READ.ME",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexandrtsukanov/kobeza-core-course-work.git"
+  },
+  "keywords": [],
+  "author": "alexandrtsukanov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexandrtsukanov/kobeza-core-course-work/issues"
+  },
+  "homepage": "https://github.com/alexandrtsukanov/kobeza-core-course-work#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
