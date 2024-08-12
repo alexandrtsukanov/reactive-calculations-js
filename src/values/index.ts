@@ -13,7 +13,7 @@ class Reactive {
         return this.value;
     }
 
-    updateValue(callback: (...args: number[]) => number) {
+    updateValue(callback: (args: number[]) => any) {
         this.value = callback(this.value);
         this.dependants.forEach(reactive => reactive.updateValue(() => callback(reactive.getValue())));
     }
