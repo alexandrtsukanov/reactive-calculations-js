@@ -1,7 +1,7 @@
 import { Alphanum } from "../types";
 
 describe('Числа', () => {
-    describe('Простые зависимости', () => {
+    describe('Простая зависимость', () => {
         const a = fromValue(1);
         const b = from(a).depend(val => val + 5);
 
@@ -24,7 +24,7 @@ describe('Числа', () => {
         });
     });
 
-    describe('Сложные зависимости от двух или более чисел', () => {
+    describe('Сложная зависимость от двух или более чисел', () => {
         const a = fromValue(1);
         const b = fromValue(2);
         const c = fromValue(3);
