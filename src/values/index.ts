@@ -63,8 +63,6 @@ const d = from(c).map((c) => c * 10);
 console.log(d.getValue());
 a.updateValue((val) => val + 10);
 b.updateValue((val) => val + 10);
-c.updateValue((val) => val - 5);
-
 
 // console.log(a.getValue());
 // console.log(b.getValue());

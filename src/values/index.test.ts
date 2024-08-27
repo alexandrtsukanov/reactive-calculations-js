@@ -1,0 +1,202 @@
+import { Alphanum } from "../types";
+
+describe('Числа', () => {
+    describe('Числовые зависимости, простые зависимости', () => {
+        const a = fromValue(1);
+        const b = from(a).depend(val => val + 5);
+    
+        test('Зависимость a от b', () => {
+            expect(b.getValue()).toBe(6);
+        });
+    
+        a.update(val => val + 10);
+        
+        test('Обновление а', () => {
+            expect(a.getValue()).toBe(11);
+        });
+    
+        test('Обновление b после обновления а', () => {
+            expect(b.getValue()).toBe(16);
+        });
+    });
+
+    describe('Числовые зависимости, сложные зависимости от двух или более чисел', () => {
+        const a = fromValue(1);
+        const b = fromValue(2);
+        const c = fromValue(3);
+        const d = from(a, b, c).depend((a, b, c) => a + b + c + 2);
+        const e = from(d).depend(d => d * 10);
+    
+        test('Зависимость с от а и b', () => {
+            expect(c.getValue()).toBe(8);
+        });
+    
+        test('Зависимость d от c', () => {
+            expect(e.getValue()).toBe(80);
+        });
+    
+        a.update((val) => val + 10);
+        b.update((val) => val + 10);
+    
+        test('Обновление а', () => {
+            expect(a.getValue()).toBe(11);
+        });
+    
+        test('Обновление b', () => {
+            expect(b.getValue()).toBe(12);
+        });
+    
+        test('Обновление с после обновления а и(или) b', () => {
+            expect(d.getValue()).toBe(28);
+        });
+    
+        test('Обновление d после обновления c', () => {
+            expect(e.getValue()).toBe(280);
+        });
+    });
+
+    describe('Длинная цепочка зависимостей', () => {
+        const a = fromValue(2);
+        const b = from(a).depend(val => val + 10);
+        const c = from(b).depend(val => val - 4);
+        const d = from(c).depend(val => val * 2);
+        const e = from(d).depend(val => val.toString());
+    
+        test('Зависимость e от a', () => {
+            expect(e.getValue()).toBeInstanceOf(String);
+        });
+    
+        test('Зависимость e от a', () => {
+            expect(e.getValue()).toBe('16');
+        });
+    
+        a.update(5);
+        
+        test('Обновление e после обновления а', () => {
+            expect(a.getValue()).toBe('22');
+        });
+    });
+
+    describe('Освобождение от зависимостей', () => {
+        const a = fromValue(3);
+        const b = from(a).depend(val => val * 2);
+        const c = from(b).depend(val => val * 4);
+
+        test('Зависимость b от a', () => {
+            expect(b.getValue()).toBe(6);
+        });
+    
+        test('Зависимость c от a', () => {
+            expect(c.getValue()).toBe(24);
+        });
+    
+        a.free(b);
+        a.update(18);
+        
+        test('Освобождение b от a', () => {
+            expect(b.getValue()).toBe(6);
+        });
+
+        b.update(val => val + 1);
+    
+        test('с сохраняет зависимость от b', () => {
+            expect(c.getValue()).toBe(28);
+        });
+    });
+
+    describe('Пустая зависимость', () => {
+        const a = fromValue(1);
+        const b = from(a);
+
+        const c = fromValue(3);
+        const d = fromValue(4);
+        const e = from(c, d);
+
+        test('Пустая зависимсость, одно значение', () => {
+            expect(b.getValue()).toBeUndefined();
+        });
+
+        test('Пустая зависимсость, несколько значений', () => {
+            expect(e.getValue()).toBeUndefined();
+        });
+
+        const f = from(b).depend(val => val * 2);
+
+        test('f зависит от b', () => {
+            expect(f.getValue()).toBe(2);
+        });
+
+        a.update(val => val + 10);
+
+        test('Обновление f после обновления b', () => {
+            expect(f.getValue()).toBe(22);
+        });
+
+        const g = from(e).depend((c, d) => (c + d) * 3);
+
+        test('g зависит от e', () => {
+            expect(g.getValue()).toBe(21);
+        });
+
+        c.update(val => val + 100);
+        d.update(val => val + 200);
+
+        test('Обновление g после обновления c и(или) d', () => {
+            expect(g.getValue()).toBe(921);
+        });
+
+        // TODO
+        describe('Адаптация по кол-ву аргументов при установлении зависимости', () => {
+            // const h = from(c, d).depend(val => val + 5)
+
+            test('Ошибка при несовпадении аоличества аргументов и зависимых значений', () => {
+                expect(from(c, d).depend(val => val + 5)).toThrow();
+            });
+        })
+    })
+
+    describe('Инициализация зависимости в рандомный момент', () => {
+        const a = fromValue(1);
+        const b = fromValue(2);
+
+        a.update(3);
+
+        test('b независима от а', () => {
+            expect(b.getValue()).toBe(2);
+        });
+
+        b.dependsOn(a).depend(val => val ** 2);
+
+        test('b теперь зависит от а', () => {
+            expect(b.getValue()).toBe(9);
+        });
+
+        test('b теперь зависит от а', () => {
+            expect(a.dependsOn(b).depend(val => val)).toThrow();
+        });
+    });
+});
+
+describe('Строки', () => {
+    const a = fromValue('abc');
+    const b = from(a).depend(val => val + '_postfix');
+    const c = from(b).depend(val => 'prefix_' + val);
+
+    test('Зависимость b от a', () => {
+        expect(b.getValue()).toBe('abc_postfix');
+    });
+
+    test('Зависимость c от b', () => {
+        expect(c.getValue()).toBe('prefix_abc_postfix');
+    });
+
+    a.update('xyz');
+
+    test('Обновление b после обновления а', () => {
+        expect(b.getValue()).toBe('xyz_postfix');
+    });
+
+    test('Обновление c после обновления b', () => {
+        expect(c.getValue()).toBe('prefix_xyz_postfix');
+    });
+})

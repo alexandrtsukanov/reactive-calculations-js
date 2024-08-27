@@ -49,18 +49,20 @@ function from(...reactives) {
 const a = fromValue(1);
 const b = fromValue(2);
 const c = from(a, b).map((a, b) => a + b + 5);
-// const d = from(c).map((c) => c * 10);
+const d = from(c).map((c) => c * 10);
 
-// console.log(a.getValue()); // 1
-// console.log(b.getValue()); // 2
-// console.log(c.getValue()); // 8
-// console.log(d.getValue()); // 80
+console.log(a.getValue()); // 1
+console.log(b.getValue()); // 2
+console.log(c.getValue()); // 8
+console.log(d.getValue()); // 80
 
 a.updateValue((val) => val + 10);
 b.updateValue((val) => val + 10);
+console.log(a.getValue()); // 1
+console.log(b.getValue()); // 2
 // c.updateValue((val) => val - 5);
 
 // console.log(a.getValue());
 // console.log(b.getValue());
 console.log(c.getValue());
-// console.log(d.getValue());
+console.log(d.getValue());
