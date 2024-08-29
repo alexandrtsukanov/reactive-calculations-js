@@ -31,11 +31,11 @@ describe('Числа', () => {
         const d = from(a, b, c).depend((a, b, c) => a + b + c + 2);
         const e = from(d).depend(d => d * 10);
     
-        test('Зависимость с от а и b', () => {
+        test('Зависимость d от а, b и c', () => {
             expect(c.getValue()).toBe(8);
         });
     
-        test('Зависимость d от c', () => {
+        test('Зависимость e от d', () => {
             expect(e.getValue()).toBe(80);
         });
     
@@ -50,11 +50,11 @@ describe('Числа', () => {
             expect(b.getValue()).toBe(12);
         });
     
-        test('Обновление с после обновления а и(или) b', () => {
+        test('Обновление d после обновления а и(или) b и(или) c', () => {
             expect(d.getValue()).toBe(28);
         });
     
-        test('Обновление d после обновления c', () => {
+        test('Обновление e после обновления d', () => {
             expect(e.getValue()).toBe(280);
         });
     });
@@ -128,7 +128,13 @@ describe('Числа', () => {
             expect(b.getValue()).toBe(9);
         });
 
-        test('b теперь зависит от а', () => {
+        a.update(4);
+
+        test('Обновление b после обновления а', () => {
+            expect(b.getValue()).toBe(16);
+        });
+
+        test('Недопустима циклическая зависимость', () => {
             expect(a.dependsOn(b).depend(val => val)).toThrow();
         });
     });

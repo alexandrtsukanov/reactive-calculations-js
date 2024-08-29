@@ -1,6 +1,6 @@
 describe('Объекты', () => {
     describe('Простая зависимость', () => {
-        const a = fromValue({a: 1, b: 2});
+        const a = fromObject({a: 1, b: 2});
         const b = from(a).depend(val => ({...val, b: val.b + 10}));
 
         test('Инициализация а', () => {
@@ -23,7 +23,7 @@ describe('Объекты', () => {
     });
 
     describe('Простая зависимость, меняем все поля', () => {
-        const a = fromValue({a: 1, b: 2});
+        const a = fromObject({a: 1, b: 2});
         const b = from(a).depend(val => ({
             ...val, 
             a: val.a + 10, 
@@ -80,7 +80,7 @@ describe('Объекты', () => {
     });
 
     describe('Цепочка правила зависимости', () => {
-        const a = fromValue({a: 1, b: 2});
+        const a = fromObject({a: 1, b: 2});
         const b = from(a)
             .depend(val => ({...val, b: val.b * 2}))
             .depend(val => ({...val, a: val.a * 3}))
@@ -103,7 +103,7 @@ describe('Объекты', () => {
     });
 
     describe('Цепочка зависимостей', () => {
-        const a = fromValue({a: 1, b: 2});
+        const a = fromObject({a: 1, b: 2});
         const b = from(a);
         const c = from(b).depend(val => ({...val, 
             b: val.b + 2,
@@ -126,7 +126,7 @@ describe('Объекты', () => {
     });
 
     describe('Зависимость через flatMap', () => {
-        const a = fromValue({a: 1, b: 2, c: 3});
+        const a = fromObject({a: 1, b: 2, c: 3});
         const b = from(a).flatMap(({a: aVal, c: cVal}) => ({[String(cVal + aVal)]: aVal + cVal}));
 
         test('Зависимость d от a', () => {
@@ -141,7 +141,7 @@ describe('Объекты', () => {
     });
 
     describe('Зависимость через map', () => {
-        const a = fromValue({a: 1, b: 2, c: 3});
+        const a = fromObject({a: 1, b: 2, c: 3});
         const b = from(a).map(([key, value]) => ({[value]: key}));
 
         test('Зависимость d от a', () => {
@@ -152,6 +152,33 @@ describe('Объекты', () => {
     
         test('Обновление d после обновления а', () => {
             expect(a.getValue()).toEqual({'4': 'a', '5': 'b', '6': 'c'});
+        });
+    });
+
+    describe('Инициализация зависимости в рандомный момент', () => {
+        const a = fromObject({a: 1});
+        const b = fromObject({b: 2});
+
+        a.update({a: 10});
+
+        test('b независима от а', () => {
+            expect(b.getValue()).toEqual({b: 2});
+        });
+
+        b.dependsOn(a).depend(val => ({...val, b: val.a}));
+
+        test('b теперь зависит от а', () => {
+            expect(b.getValue()).toBe({b: 10});
+        });
+
+        a.update({a: 20});
+
+        test('Обновление b после обновления а', () => {
+            expect(b.getValue()).toBe({b: 20});
+        });
+
+        test('Недопустима циклическая зависимость', () => {
+            expect(a.dependsOn(b).depend(val => val)).toThrow();
         });
     });
 })

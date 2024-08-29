@@ -125,4 +125,31 @@ describe('Функции', () => {
             expect(f3.getValue()(1, 2, 3, 4, 5)).toBe(22);
         });
     })
+
+    describe('Пустая зависимость', () => {
+        const f1 = fromFunction(str => str.length);
+        const f2 = from(f1);
+        const f3 = from(f2).depend(num => num * 2);
+
+        test('Инициализация f1', () => {
+            expect(f1.getValue()('hello!')).toBe(6);
+        });
+
+        test('Зависимость f2 от f1', () => {
+            expect(f2.getValue()).toBeUndefined();
+        });
+        
+        test('Зависимость f2 от f1 с другими аргументами', () => {
+            expect(f3.getValue()('hello!')).toBe(12);
+        });
+    })
+
+    describe('Ничего не возвращающая функция', () => {
+        const f1 = fromFunction(() => {});
+        const f2 = from(f1).depend(val => val + 1);
+
+        test('Зависимость f3 от f1 и(или) f2', () => {
+            expect(f2.getValue()()).toBeNaN();
+        });
+    })
 })
