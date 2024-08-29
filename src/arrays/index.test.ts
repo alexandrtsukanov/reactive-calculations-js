@@ -1,3 +1,5 @@
+const {fromArray, from} = require('../sync.ts');
+
 describe('Массивы', () => {
     describe('Простая зависимость', () => {
         const a = fromArray([1, 2, 3]);

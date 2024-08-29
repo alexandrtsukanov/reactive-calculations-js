@@ -2,24 +2,32 @@
 
 type DependencyChain<T> = Map<Reactive<T>, Set<[Reactive<T>, () => void]>>
 type Initializer<T> = T extends any ? (T | (() => T)) : never
+type Exept = Exclude<null | undefined, any>;
 
 type DependencyChain2<T> = Set<Reactive<T>>;
 
-class Reactive<T> {
+interface DependencyOptions {
+    isStrict: boolean;
+}
+
+class Reactive<T extends NonNullable<any>> {
     private value: T | null;
     private deps: DependencyChain2<T>;
     private parents: DependencyChain2<T>;
-    rules: Map<Reactive<T>, Function>;
+    // rules: Map<Reactive<T>, Function>;
     isFree = true;
     isStrict = true;
     rule: ((...args: any[]) => T) | null;
+    isEmptyDep = true;
+    parentRule: ((...args: any[]) => T) | null;
 
     constructor(value: T | null = null) {
         this.value = value;
         this.deps = new Set();
         this.parents = new Set();
-        this.rules = new Map();
+        // this.rules = new Map();
         this.rule = null;
+        this.parentRule = null;
     }
 
     getValue() {
@@ -72,10 +80,15 @@ class Reactive<T> {
         }
     }
 
-    // private updateSelf() {
+    getClosestNonEmptyParents(reactive: Reactive<T>) {
+        let current = this;
 
-    // }
-
+        while (current.isEmptyDep) {
+            current = this;
+            // current = current.getParents();
+        }
+    }
+ 
     updateDep(callback: typeof this.rule, ...parents: Reactive<T>[]) {
         if (callback) {
             // const arrayOfParents = []
@@ -92,10 +105,19 @@ class Reactive<T> {
         return this.parents;
     }
 
-    depend(callback: (...args: any[]) => T) {
+    depend(callback: (...args: any[]) => T, options?: DependencyOptions) {
         this.rule = callback;
+        this.parentRule = callback;
+
+        this.isEmptyDep = false;
+
         const arrayOfParents = Array.from(this.parents);
-        // const arrayOfParents = [...this.parents];
+
+        const {isStrict} = options ?? {};
+
+        if (isStrict) {
+            this.isStrict = isStrict;
+        }
         
         // Check args amount
 
@@ -126,6 +148,10 @@ class Reactive<T> {
             reactive.getDeps().delete(this);
         })
     }
+
+    isDependent() {
+        return this.parents.size > 0;
+    }
 }
 
 function fromValue(value: any) {
@@ -142,19 +168,23 @@ function from(...reactives: Reactive<any>[]) {
 
         newReactive.getParents().add(reactive);
     });
+
+    newReactive.parentRule;
     
     return newReactive;
 }
 
 const a = fromValue(1);
 const b = fromValue(2);
-const c = from(a, b).depend((val, b) => val + b + 5);
+const c = from(a, b);
+const d = from(c).depend((valA, valB) => valA + valB + 5);
 
 console.log(a.getValue())
 console.log(b.getValue())
 console.log(c.getValue())
+console.log(d.getValue())
 
-a.update((val: number) => val + 10)
+a.update(val => val + 10)
 b.update((val: number) => val + 10)
 
 console.log('\n');
@@ -162,6 +192,10 @@ console.log('\n');
 console.log(a.getValue())
 console.log(b.getValue())
 console.log(c.getValue())
-
-const d = from(c).depend((val) => val * 10);
 console.log(d.getValue())
+
+module.exports = {
+    Reactive,
+    fromValue,
+    from,
+}

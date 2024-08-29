@@ -1,5 +1,7 @@
 import { Alphanum } from "../types";
 
+const {fromValue, from} = require('../sync.ts');
+
 describe('Числа', () => {
     describe('Простая зависимость', () => {
         const a = fromValue(1);

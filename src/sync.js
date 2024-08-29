@@ -137,15 +137,16 @@ function from() {
 }
 var a = fromValue(1);
 var b = fromValue(2);
-var c = from(a, b).depend(function (val, b) { return val + b + 5; });
+var c = from(a, b);
+var d = from(c).depend(function (valA, valB) { return valA + valB + 5; });
 console.log(a.getValue());
 console.log(b.getValue());
 console.log(c.getValue());
+console.log(d.getValue());
 a.update(function (val) { return val + 10; });
 b.update(function (val) { return val + 10; });
 console.log('\n');
 console.log(a.getValue());
 console.log(b.getValue());
 console.log(c.getValue());
-var d = from(c).depend(function (val) { return val * 10; });
 console.log(d.getValue());

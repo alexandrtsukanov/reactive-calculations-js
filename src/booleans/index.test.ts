@@ -1,3 +1,5 @@
+const {fromBoolean, from} = require('../sync.ts');
+
 describe('Логические значения', () => {
     const a = fromBoolean(true);
     const b = from(a).same();

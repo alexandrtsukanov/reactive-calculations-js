@@ -1,3 +1,5 @@
+const {fromIterable, from} = require('../sync.ts');
+
 describe('Iterables', () => {
     describe('Простая зависимость', () => {
         const a = fromIterable([1, 2, 3]);
@@ -129,7 +131,7 @@ describe('Iterables', () => {
         a.update('xyz');
 
         test('Обновление b после обновления а', () => {
-            const iterator = e[Symbol.iterator]();
+            const iterator = b[Symbol.iterator]();
     
             expect(iterator.next().value).toBe('x!');
             expect([...iterator]).toEqual(['y!', 'z!']);
@@ -153,7 +155,7 @@ describe('Iterables', () => {
         a.update(new Set([4, 5, 6]));
 
         test('Обновление b после обновления а', () => {
-            const iterator = e[Symbol.iterator]();
+            const iterator = b[Symbol.iterator]();
     
             expect(iterator.next().value).toBe(11);
             expect([...iterator]).toEqual([10, 9]);
@@ -179,7 +181,7 @@ describe('Iterables', () => {
 
     describe('Не итератор', () => {
         test('Не итератор', () => {
-            expect(a = fromIterable(42)).toThrow();
+            expect(fromIterable(42)).toThrow();
         })
     })
 })
