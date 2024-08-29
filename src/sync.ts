@@ -18,8 +18,9 @@ class Reactive<T extends NonNullable<any>> {
     isFree = true;
     isStrict = true;
     rule: ((...args: any[]) => T) | null;
-    isEmptyDep = true;
+    isEmptyDep = false;
     parentRule: ((...args: any[]) => T) | null;
+    closestNonEmptyParents: Reactive<T>[];
 
     constructor(value: T | null = null) {
         this.value = value;
@@ -28,6 +29,7 @@ class Reactive<T extends NonNullable<any>> {
         // this.rules = new Map();
         this.rule = null;
         this.parentRule = null;
+        this.closestNonEmptyParents = [];
     }
 
     getValue() {
@@ -63,11 +65,11 @@ class Reactive<T extends NonNullable<any>> {
             const reactive = queue[cursor];
             const {rule} = reactive;
 
-            if (rule && reactive.getValue() !== null) {
+            if (!reactive.isEmpty()) {
+            // if (rule && reactive.getValue() !== null) {
                 // @ts-ignore
-                const set = reactive.getParents();
-                const arr = Array.from(set);
-                reactive.updateDep(rule, ...arr);
+                const arrayOfParents = reactive.closestNonEmptyParents;
+                reactive.updateDep(rule, ...arrayOfParents);
             }
 
             const dependencies = reactive.getDeps();
@@ -93,7 +95,8 @@ class Reactive<T extends NonNullable<any>> {
         if (callback) {
             // const arrayOfParents = []
 
-            this.value = callback(...parents.map((reactive: Reactive<T>) => reactive.getValue()));
+            this.value = callback(...this.mapToValues(parents));
+            // this.value = callback(...parents.map((reactive: Reactive<T>) => reactive.getValue()));
         }
     }
 
@@ -107,11 +110,6 @@ class Reactive<T extends NonNullable<any>> {
 
     depend(callback: (...args: any[]) => T, options?: DependencyOptions) {
         this.rule = callback;
-        this.parentRule = callback;
-
-        this.isEmptyDep = false;
-
-        const arrayOfParents = Array.from(this.parents);
 
         const {isStrict} = options ?? {};
 
@@ -120,8 +118,9 @@ class Reactive<T extends NonNullable<any>> {
         }
         
         // Check args amount
-
-        this.value = this.rule(...arrayOfParents.map((reactive: Reactive<T>) => reactive.getValue()));
+        const arrayOfParents = Array.from(this.parents);
+        this.value = this.rule(...this.mapToValues(arrayOfParents));
+        // this.value = this.rule(...arrayOfParents.map((reactive: Reactive<T>) => reactive.getValue()));
 
         return this;
     }
@@ -152,6 +151,14 @@ class Reactive<T extends NonNullable<any>> {
     isDependent() {
         return this.parents.size > 0;
     }
+
+    isEmpty() {
+        return this.isDependent() && this.value === null && this.rule === null;
+    }
+
+    private mapToValues(reactives: Reactive<T>[]) {
+        return reactives.map((reactive: Reactive<T>) => reactive.getValue());
+    }
 }
 
 function fromValue(value: any) {
@@ -169,8 +176,12 @@ function from(...reactives: Reactive<any>[]) {
         newReactive.getParents().add(reactive);
     });
 
-    newReactive.parentRule;
-    
+    if (reactives[0].isEmpty()) {
+        newReactive.closestNonEmptyParents = reactives[0].closestNonEmptyParents;
+    } else {
+        newReactive.closestNonEmptyParents = [...reactives];
+    }
+
     return newReactive;
 }
 
