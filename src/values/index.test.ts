@@ -183,6 +183,52 @@ describe('Числа', () => {
         });
     })
 
+    describe('Длинная цепочка пустых зависимостей', () => {
+        const a = fromValue(1);
+        const b = fromValue(2);
+        const c = from(a, b);
+        const d = from(c);
+        const e = from(d);
+        const f = from(e)
+        const g = from(f).depend((valA, b) => valA + b + 7);
+
+        test('g зависит от a и b', () => {
+            expect(g.getValue()).toBe(10);
+        });
+
+        a.update(val => val + 10);
+        b.update(val => val + 10);
+
+        test('Обновление g после обновления а и(или) b', () => {
+            expect(g.getValue()).toBe(30);
+        });
+    })
+
+    describe('Комбинации родителей', () => {
+        const a = fromValue(1);
+        const b = fromValue(2);
+        const c = from(a);
+        const d = from(b);
+        const e = from(c, d).depend((a, b) => a + b + 5);
+
+        test('e зависит от a и b', () => {
+            expect(e.getValue()).toBe(8);
+        });
+
+        a.update(val => val + 10);
+        b.update(val => val + 20);
+
+        test('Обновление e после обновления а и(или) b', () => {
+            expect(g.getValue()).toBe(35);
+        });
+
+        const f = from(c, d).depend((a) => a + 5);
+
+        test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
+            expect(from(c, d).depend((a) => a + 5)).toThrow();
+        })
+    })
+
     describe('Нестрогие зависимости', () => {
         const a = fromValue(1);
         const b = from(a, {isStrict: false}).depend(val => Math.floor((val + 5) / 2));
@@ -212,16 +258,15 @@ describe('Числа', () => {
         });
     })
 
-    // TODO
     describe('Адаптация по кол-ву аргументов при установлении зависимости', () => {
         const a = fromValue(3);
         const b = fromValue(4);
 
-        test('Ошибка при несовпадении аоличества аргументов и зависимых значений', () => {
+        test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
             expect(from(a, b).depend(val => val + 5)).toThrow();
         });
 
-        test('Ошибка при несовпадении аоличества аргументов и зависимых значений', () => {
+        test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
             expect(from(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
         });
     })

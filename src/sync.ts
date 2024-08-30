@@ -1,10 +1,8 @@
 // import { DependencyChain } from "./types";
 
-type DependencyChain<T> = Map<Reactive<T>, Set<[Reactive<T>, () => void]>>
-type Initializer<T> = T extends any ? (T | (() => T)) : never
 type Exept = Exclude<null | undefined, any>;
 
-type DependencyChain2<T> = Set<Reactive<T>>;
+type DependencyChain<T> = Set<Reactive<T>>;
 
 interface DependencyOptions {
     isStrict: boolean;
@@ -12,23 +10,17 @@ interface DependencyOptions {
 
 class Reactive<T extends NonNullable<any>> {
     private value: T | null;
-    private deps: DependencyChain2<T>;
-    private parents: DependencyChain2<T>;
-    // rules: Map<Reactive<T>, Function>;
-    isFree = true;
-    isStrict = true;
+    private deps: DependencyChain<T>;
+    private parents: DependencyChain<T>;
     rule: ((...args: any[]) => T) | null;
-    isEmptyDep = false;
-    parentRule: ((...args: any[]) => T) | null;
     closestNonEmptyParents: Reactive<T>[];
+    isStrict = true;
 
     constructor(value: T | null = null) {
         this.value = value;
         this.deps = new Set();
         this.parents = new Set();
-        // this.rules = new Map();
         this.rule = null;
-        this.parentRule = null;
         this.closestNonEmptyParents = [];
     }
 
@@ -36,38 +28,38 @@ class Reactive<T extends NonNullable<any>> {
         return this.value;
     }
 
-    update(newValue: Initializer<T>) {
-        // if (typeof newValue === 'function') {
-        //     this.value = newValue(this.value);
-        // } else {
-        //     //@ts-ignore
-        //     this.value = newValue;
-        // }
+    update(newValue: T | ((prevValue: T) => T)) {
+        if (this.isDependent() && this.isStrict) {
+            return;
+        }
 
-        // this.updateDeps();
+        // instanceof works!
+        if (newValue instanceof Function) {
+            if (this.value !== null) {
+                this.value = newValue(this.value)
+            }
+        } else {
+            this.value = newValue;
+        }
 
-        const updater = typeof newValue === 'function'
-            ? newValue
-            : () => newValue
-
-        // @ts-ignore
-        this.value = updater(this.value);
+        // const updater: Function = typeof newValue === 'function'
+        //     ? newValue
+        //     : (_: T) => newValue
+            
+        // this.value = updater(this.value);
 
         this.updateDeps();
     }
 
     private updateDeps() {
-        const queue: Reactive<T>[] = Array.from(this.deps)
-        // const queue: Reactive<T>[] = [...this.deps];
+        const queue: Reactive<T>[] = Array.from(this.deps);
         let cursor = 0;
 
         while (cursor < queue.length) {
             const reactive = queue[cursor];
             const {rule} = reactive;
 
-            if (!reactive.isEmpty()) {
-            // if (rule && reactive.getValue() !== null) {
-                // @ts-ignore
+            if (!reactive.isEmptyDep()) {
                 const arrayOfParents = reactive.closestNonEmptyParents;
                 reactive.updateDep(rule, ...arrayOfParents);
             }
@@ -81,22 +73,10 @@ class Reactive<T extends NonNullable<any>> {
             cursor += 1;
         }
     }
-
-    getClosestNonEmptyParents(reactive: Reactive<T>) {
-        let current = this;
-
-        while (current.isEmptyDep) {
-            current = this;
-            // current = current.getParents();
-        }
-    }
  
-    updateDep(callback: typeof this.rule, ...parents: Reactive<T>[]) {
+    updateDep(callback: ((...args: any[]) => T) | null, ...parents: Reactive<T>[]) {
         if (callback) {
-            // const arrayOfParents = []
-
             this.value = callback(...this.mapToValues(parents));
-            // this.value = callback(...parents.map((reactive: Reactive<T>) => reactive.getValue()));
         }
     }
 
@@ -109,27 +89,36 @@ class Reactive<T extends NonNullable<any>> {
     }
 
     depend(callback: (...args: any[]) => T, options?: DependencyOptions) {
-        this.rule = callback;
-
         const {isStrict} = options ?? {};
 
-        if (isStrict) {
+        if (isStrict !== undefined) {
             this.isStrict = isStrict;
         }
         
-        // Check args amount
-        const arrayOfParents = Array.from(this.parents);
+        const arrayOfParents = Array.from(this.closestNonEmptyParents);
+
+        if (callback.length !== arrayOfParents.length) {
+            throw new Error(`Item depends on ${arrayOfParents.length} items, but you passed ${callback.length} arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on`);
+        }
+
+        this.rule = callback;
+
         this.value = this.rule(...this.mapToValues(arrayOfParents));
-        // this.value = this.rule(...arrayOfParents.map((reactive: Reactive<T>) => reactive.getValue()));
 
         return this;
     }
 
     dependsOn(...reactives: Reactive<T>[]) {
         reactives.forEach(reactive => {
+            if (this.deps.has(reactive)) {
+                throw new Error('Cycle dependency');
+            }
+
             reactive.getDeps().add(this);
             this.parents.add(reactive);
         })
+
+        return this;
     }
 
     free(...reactives: Reactive<T>[]) {
@@ -152,7 +141,7 @@ class Reactive<T extends NonNullable<any>> {
         return this.parents.size > 0;
     }
 
-    isEmpty() {
+    isEmptyDep() {
         return this.isDependent() && this.value === null && this.rule === null;
     }
 
@@ -161,26 +150,39 @@ class Reactive<T extends NonNullable<any>> {
     }
 }
 
-function fromValue(value: any) {
+function fromValue(value: number | string | boolean) {
     return new Reactive(value);
 }
 
 function from(...reactives: Reactive<any>[]) {
     const newReactive = new Reactive();
 
-    reactives.forEach(reactive => {
+    let emptyReactiveMet = false;
+    let nonEmptyReactiveMet = false;
+
+    reactives.forEach((reactive) => {
+        if (reactive.isEmptyDep()) emptyReactiveMet = true;
+        if (!reactive.isEmptyDep()) nonEmptyReactiveMet = true;
+
+        if (
+            (reactive.isEmptyDep() && nonEmptyReactiveMet) ||
+            (!reactive.isEmptyDep() && emptyReactiveMet)
+        ) {
+            throw new Error('Item cannot depend on both empty dependent item and non empty item');
+        }
+
         reactive
             .getDeps()
             .add(newReactive)
 
         newReactive.getParents().add(reactive);
-    });
 
-    if (reactives[0].isEmpty()) {
-        newReactive.closestNonEmptyParents = reactives[0].closestNonEmptyParents;
-    } else {
-        newReactive.closestNonEmptyParents = [...reactives];
-    }
+        if (reactive.isEmptyDep()) {
+            newReactive.closestNonEmptyParents.push(...reactive.closestNonEmptyParents)
+        } else {
+            newReactive.closestNonEmptyParents.push(reactive);
+        }
+    });
 
     return newReactive;
 }
@@ -188,22 +190,22 @@ function from(...reactives: Reactive<any>[]) {
 const a = fromValue(1);
 const b = fromValue(2);
 const c = from(a, b);
-const d = from(c).depend((valA, valB) => valA + valB + 5);
+const d = from(c).depend((a, b) => a + b + 5);
 
-console.log(a.getValue())
-console.log(b.getValue())
-console.log(c.getValue())
-console.log(d.getValue())
+// const a = fromValue(1);
+// const b = fromValue(2);
+// const c = from(a);
+// const d = from(b);
+// const e = from(c, d).depend((a, b) => a + b + 5) // 8
 
-a.update(val => val + 10)
-b.update((val: number) => val + 10)
+a.update(10)
+b.update(20)
 
-console.log('\n');
-
-console.log(a.getValue())
-console.log(b.getValue())
-console.log(c.getValue())
-console.log(d.getValue())
+console.log(a.getValue());
+console.log(b.getValue());
+console.log(c.getValue());
+console.log(d.getValue());
+// console.log(e.getValue());
 
 module.exports = {
     Reactive,
