@@ -229,7 +229,7 @@ describe('Числа', () => {
 
     describe('Нестрогие зависимости', () => {
         const a = fromValue(1);
-        const b = from(a, {isStrict: false}).depend(val => Math.floor((val + 5) / 2));
+        const b = from(a).depend(val => Math.floor((val + 5) / 2), {isStrict: false});
         const c = from(a).depend(val => Math.floor((val + 5) / 2));
 
         test('Зависимость b от a', () => {

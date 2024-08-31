@@ -90,14 +90,12 @@ class Reactive<T extends NonNullable<any>> {
             this.isStrict = isStrict;
         }
         
-        const arrayOfParents = Array.from(this.closestNonEmptyParents);
-
-        if (callback.length !== arrayOfParents.length) {
-            throw new Error(`Item depends on ${arrayOfParents.length} items, but you passed ${callback.length} arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on`);
+        if (callback.length !== this.closestNonEmptyParents.length) {
+            throw new Error(`Item depends on ${this.closestNonEmptyParents.length} items, but you passed ${callback.length} arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on`);
         }
 
         this.rule = callback;
-        this.value = this.rule(...this.mapToValues(arrayOfParents));
+        this.value = this.rule(...this.mapToValues(this.closestNonEmptyParents));
 
         return this;
     }
