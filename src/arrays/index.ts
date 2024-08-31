@@ -4,57 +4,66 @@ interface DependencyOptions {
     isStrict: boolean;
 }
 
-type ArrayMethod<T> = (value: T, index: number, array: T[]) => Array<T>;
+type ArrayMethod<T> = (value: T) => Array<T>;
+type FlatMapArray<T> = (this: undefined, value: T) => Array<T>;
 
 class ArrayReactive extends Reactive {
-    constructor(value: Array<any>) {
+    constructor(value: Array<unknown>) {
         super(value)
     }
 
-    map(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    map(callback: ArrayMethod<unknown>, options?: DependencyOptions) {
+        this.checkDeps();
+
         return this.depend(
-            (arr: Array<any>) => arr.map(callback),
+            (arr: Array<unknown>) => arr.map(callback),
             options,
         );
     }
 
-    filter(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    filter(callback: ArrayMethod<unknown>, options?: DependencyOptions) {
+        this.checkDeps();
+        
         return this.depend(
-            (arr: Array<any>) => arr.filter(callback),
+            (arr: Array<unknown>) => arr.filter(callback),
             options,
         );
     }
 
-    flatMap(callback: any, options?: DependencyOptions) { // ? callback flatMap
+    flatMap(callback: FlatMapArray<unknown>, options?: DependencyOptions) {
+        this.checkDeps();
+
         return this.depend(
-            (arr: Array<any>) => arr.flatMap(callback),
+            (arr: Array<unknown>) => arr.flatMap(callback),
             options,
         );
     }
 
-    append(arrToAppend: Array<any>, options?: DependencyOptions) {
+    append(arrToAppend: Array<unknown>, options?: DependencyOptions) {
+        this.checkDeps();
+
         return this.depend(
-            (arr: Array<any>) => [...arr, ...arrToAppend],
+            (arr: Array<unknown>) => [...arr, ...arrToAppend],
             options,
         );
     }
 
-    unshift(arrToUnshift: Array<any>, options?: DependencyOptions) {
+    unshift(arrToUnshift: Array<unknown>, options?: DependencyOptions) {
+        this.checkDeps();
+
         return this.depend(
-            (arr: Array<any>) => [...arrToUnshift, ...arr],
+            (arr: Array<unknown>) => [...arrToUnshift, ...arr],
             options,
         );
     }
 
     reverse(options?: DependencyOptions) {
+        this.checkDeps();
+
         return this.depend(
-            (arr: Array<any>) => [...arr.reverse()],
+            (arr: Array<unknown>) => [...arr.reverse()],
             options,
         );
-    }
-
-    private checkDeps() {
-        //
     }
 }
 

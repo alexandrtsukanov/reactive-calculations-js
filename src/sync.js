@@ -25,10 +25,15 @@ var Reactive = /** @class */ (function () {
         if (this.isDependent() && this.isStrict) {
             return;
         }
-        var updater = typeof newValue === 'function'
-            ? newValue
-            : function () { return newValue; };
-        this.value = updater(this.value);
+        if (this.value === null) {
+            return;
+        }
+        if (newValue instanceof Function) {
+            this.value = newValue(this.value);
+        }
+        else {
+            this.value = newValue;
+        }
         this.updateDeps();
     };
     Reactive.prototype.updateDeps = function () {
@@ -82,10 +87,24 @@ var Reactive = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             reactives[_i] = arguments[_i];
         }
+        var emptyReactiveMet = false;
+        var nonEmptyReactiveMet = false;
         reactives.forEach(function (reactive) {
+            if (_this.deps.has(reactive)) {
+                throw new Error('Cycle dependency');
+            }
+            if (reactive.isEmptyDep())
+                emptyReactiveMet = true;
+            if (!reactive.isEmptyDep())
+                nonEmptyReactiveMet = true;
+            if ((reactive.isEmptyDep() && nonEmptyReactiveMet) ||
+                (!reactive.isEmptyDep() && emptyReactiveMet)) {
+                throw new Error('Item cannot depend on both empty dependent item and non empty item');
+            }
             reactive.getDeps().add(_this);
             _this.parents.add(reactive);
         });
+        return this;
     };
     Reactive.prototype.free = function () {
         var _this = this;
@@ -131,7 +150,7 @@ function from() {
     var newReactive = new Reactive();
     var emptyReactiveMet = false;
     var nonEmptyReactiveMet = false;
-    reactives.forEach(function (reactive, index) {
+    reactives.forEach(function (reactive) {
         var _a;
         if (reactive.isEmptyDep())
             emptyReactiveMet = true;
@@ -147,30 +166,26 @@ function from() {
         newReactive.getParents().add(reactive);
         if (reactive.isEmptyDep()) {
             (_a = newReactive.closestNonEmptyParents).push.apply(_a, reactive.closestNonEmptyParents);
-            // newReactive.closestNonEmptyParents[index] = reactive.closestNonEmptyParents[index];
         }
         else {
             newReactive.closestNonEmptyParents.push(reactive);
         }
     });
-    // if (reactives[0].isEmptyDep()) {
-    //     newReactive.closestNonEmptyParents = reactives[0].closestNonEmptyParents;
-    // } else {
-    //     newReactive.closestNonEmptyParents = [...reactives];
-    // }
     return newReactive;
 }
-// const a = fromValue(1);
-// const b = fromValue(2);
-// const c = from(a, b);
-// const d = from(c).depend((a, b) => a + b + 5);
 var a = fromValue(1);
 var b = fromValue(2);
 var c = from(a);
 var d = from(b);
-var e = from(c, d).depend(function (a, b) { return a + b + 5; });
-a.update(10)
-b.update(20)
+var e = from(c, d).depend(function (a, b) { return a + b; });
+console.log(e.getValue());
+// const a = fromValue(1);
+// const b = fromValue(2);
+// const c = from(a);
+// const d = from(b);
+// const e = from(c, d).depend((a, b) => a + b + 5) // 8
+a.update(10);
+b.update(20);
 console.log(a.getValue());
 console.log(b.getValue());
 console.log(c.getValue());

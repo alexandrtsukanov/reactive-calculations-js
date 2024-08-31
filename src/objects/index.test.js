@@ -127,7 +127,7 @@ describe('Объекты', () => {
 
     describe('Зависимость через flatMap', () => {
         const a = fromObject({a: 1, b: 2, c: 3});
-        const b = from(a).flatMap(({a: aVal, c: cVal}) => ({[String(cVal + aVal)]: aVal + cVal}));
+        const b = from(a).flatMap(({a: aVal, c: cVal}) => ({[String(cVal) + String(aVal)]: aVal + cVal}));
 
         test('Зависимость d от a', () => {
             expect(b.getValue()).toEqual({'31': 4});
@@ -142,7 +142,7 @@ describe('Объекты', () => {
 
     describe('Зависимость через map', () => {
         const a = fromObject({a: 1, b: 2, c: 3});
-        const b = from(a).map(([key, value]) => ({[value]: key}));
+        const b = from(a).map((key, value) => [value, key]);
 
         test('Зависимость d от a', () => {
             expect(b.getValue()).toEqual({'1': 'a', '2': 'b', '3': 'c'});

@@ -219,10 +219,8 @@ describe('Числа', () => {
         b.update(val => val + 20);
 
         test('Обновление e после обновления а и(или) b', () => {
-            expect(g.getValue()).toBe(35);
+            expect(e.getValue()).toBe(38);
         });
-
-        const f = from(c, d).depend((a) => a + 5);
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
             expect(from(c, d).depend((a) => a + 5)).toThrow();

@@ -29,24 +29,19 @@ class Reactive<T extends NonNullable<any>> {
     }
 
     update(newValue: T | ((prevValue: T) => T)) {
+        if (this.value === null) {
+            return;
+        }
+        
         if (this.isDependent() && this.isStrict) {
             return;
         }
 
-        // instanceof works!
         if (newValue instanceof Function) {
-            if (this.value !== null) {
-                this.value = newValue(this.value)
-            }
+            this.value = newValue(this.value)
         } else {
             this.value = newValue;
         }
-
-        // const updater: Function = typeof newValue === 'function'
-        //     ? newValue
-        //     : (_: T) => newValue
-            
-        // this.value = updater(this.value);
 
         this.updateDeps();
     }
@@ -74,7 +69,7 @@ class Reactive<T extends NonNullable<any>> {
         }
     }
  
-    updateDep(callback: ((...args: any[]) => T) | null, ...parents: Reactive<T>[]) {
+    updateDep(callback: ((...args: (T | null)[]) => T) | null, ...parents: Reactive<T>[]) {
         if (callback) {
             this.value = callback(...this.mapToValues(parents));
         }
@@ -88,7 +83,7 @@ class Reactive<T extends NonNullable<any>> {
         return this.parents;
     }
 
-    depend(callback: (...args: any[]) => T, options?: DependencyOptions) {
+    depend(callback: (...args: T[]) => T, options?: DependencyOptions) {
         const {isStrict} = options ?? {};
 
         if (isStrict !== undefined) {
@@ -102,23 +97,13 @@ class Reactive<T extends NonNullable<any>> {
         }
 
         this.rule = callback;
-
         this.value = this.rule(...this.mapToValues(arrayOfParents));
 
         return this;
     }
 
     dependsOn(...reactives: Reactive<T>[]) {
-        reactives.forEach(reactive => {
-            if (this.deps.has(reactive)) {
-                throw new Error('Cycle dependency');
-            }
-
-            reactive.getDeps().add(this);
-            this.parents.add(reactive);
-        })
-
-        return this;
+        return createDependencyChain<T>(this, reactives);
     }
 
     free(...reactives: Reactive<T>[]) {
@@ -148,49 +133,63 @@ class Reactive<T extends NonNullable<any>> {
     private mapToValues(reactives: Reactive<T>[]) {
         return reactives.map((reactive: Reactive<T>) => reactive.getValue());
     }
+
+    protected checkDeps() {
+        if (this.closestNonEmptyParents.length > 1) {
+            throw new Error(`The current dependency method supports dependency of only one item. Now it depends on ${this.closestNonEmptyParents.length} items with values ${this.mapToValues(this.closestNonEmptyParents)}`);
+        }
+    }
 }
 
-function fromValue(value: number | string | boolean) {
-    return new Reactive(value);
+function fromValue(value: number | string) {
+    return new Reactive<typeof value>(value);
 }
 
-function from(...reactives: Reactive<any>[]) {
-    const newReactive = new Reactive();
+function from<T>(...reactives: Reactive<T>[]) {
+    const newReactive = new Reactive<T>();
 
+    return createDependencyChain<T>(newReactive, reactives);
+}
+
+function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
     let emptyReactiveMet = false;
     let nonEmptyReactiveMet = false;
 
-    reactives.forEach((reactive) => {
-        if (reactive.isEmptyDep()) emptyReactiveMet = true;
-        if (!reactive.isEmptyDep()) nonEmptyReactiveMet = true;
+    parents.forEach(parent => {
+        if (dep.getDeps().has(parent)) {
+            throw new Error('Cycle dependency');
+        }
+        
+        if (parent.isEmptyDep()) emptyReactiveMet = true;
+        if (!parent.isEmptyDep()) nonEmptyReactiveMet = true;
 
         if (
-            (reactive.isEmptyDep() && nonEmptyReactiveMet) ||
-            (!reactive.isEmptyDep() && emptyReactiveMet)
+            (parent.isEmptyDep() && nonEmptyReactiveMet) ||
+            (!parent.isEmptyDep() && emptyReactiveMet)
         ) {
             throw new Error('Item cannot depend on both empty dependent item and non empty item');
         }
 
-        reactive
-            .getDeps()
-            .add(newReactive)
+        parent.getDeps().add(dep);
+        dep.getParents().add(parent);
 
-        newReactive.getParents().add(reactive);
-
-        if (reactive.isEmptyDep()) {
-            newReactive.closestNonEmptyParents.push(...reactive.closestNonEmptyParents)
+        if (parent.isEmptyDep()) {
+            dep.closestNonEmptyParents.push(...parent.closestNonEmptyParents)
         } else {
-            newReactive.closestNonEmptyParents.push(reactive);
+            dep.closestNonEmptyParents.push(parent);
         }
     });
 
-    return newReactive;
+    return dep;
 }
 
 const a = fromValue(1);
 const b = fromValue(2);
-const c = from(a, b);
-const d = from(c).depend((a, b) => a + b + 5);
+const c = from(a);
+const d = from(b);
+const e = from(c, d).depend((a, b) => a + b);
+
+console.log(e.getValue());
 
 // const a = fromValue(1);
 // const b = fromValue(2);
@@ -205,10 +204,14 @@ console.log(a.getValue());
 console.log(b.getValue());
 console.log(c.getValue());
 console.log(d.getValue());
-// console.log(e.getValue());
+console.log(e.getValue());
 
 module.exports = {
     Reactive,
     fromValue,
     from,
+}
+
+function sum(a: string, b: number | string) {
+    return a + b
 }

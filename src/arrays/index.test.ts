@@ -35,7 +35,7 @@ describe('Массивы', () => {
         const b = from(a)
             .map(el => el * 2)
             .filter(el => el > 3)
-            .push(['end'])
+            .append(['end'])
             .unshift(['start'])
             .reverse();
 
