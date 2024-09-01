@@ -1,18 +1,20 @@
-const Reactive = require('../sync.ts')
+import { DependencyOptions, Reactive } from "../reactive";
 
-interface DependencyOptions {
-    isStrict: boolean;
-}
+type ArrayMethod<T> = (value: T) => T;
 
-type ArrayMethod<T> = (value: T) => Array<T>;
+class IterableReactive extends Reactive<Iterable<any>> {
+    iterator: Iterator<any>;
 
-class IterableReactive extends Reactive {
-    constructor(value: Iterable<unknown>) {
-        super();
-        this.value = value[Symbol.iterator]();
+    constructor(value: Iterable<any>) {
+        super(value);
+        this.iterator = value[Symbol.iterator]();
     }
 
-    map(callback: ArrayMethod<unknown>, options?: DependencyOptions) {
+    getIterator() {
+        return this.iterator;
+    }
+
+    map(callback: ArrayMethod<any>, options?: DependencyOptions) {
         this.checkDeps();
 
         return this.depend(
@@ -26,7 +28,7 @@ class IterableReactive extends Reactive {
         );
     }
 
-    filter(callback: ArrayMethod<unknown>, options?: DependencyOptions) {
+    filter(callback: ArrayMethod<any>, options?: DependencyOptions) {
         this.checkDeps();
         
         return this.depend(

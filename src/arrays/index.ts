@@ -17,7 +17,7 @@ class ArrayReactive extends Reactive<Array<any>> {
         this.checkDeps();
         
         return this.depend(
-            (arr: Array<unknown>) => arr.filter(callback),
+            (arr: Array<any>) => arr.filter(callback),
             options,
         );
     }
@@ -26,7 +26,7 @@ class ArrayReactive extends Reactive<Array<any>> {
         this.checkDeps();
 
         return this.depend(
-            (arr: Array<unknown>) => arr.flatMap(callback),
+            (arr: Array<any>) => arr.flatMap(callback),
             options,
         );
     }
@@ -35,7 +35,7 @@ class ArrayReactive extends Reactive<Array<any>> {
         this.checkDeps();
 
         return this.depend(
-            (arr: Array<unknown>) => [...arr, ...arrToAppend],
+            (arr: Array<any>) => [...arr, ...arrToAppend],
             options,
         );
     }
