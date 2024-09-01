@@ -1,15 +1,11 @@
-const Reactive = require('../sync.ts')
+import { Reactive, createDependencyChain } from "../reactive";
 
 interface DependencyOptions {
     isStrict: boolean;
 }
 
 class FunctionReactive extends Reactive<Function> {
-    constructor(value) {
-        super(value)
-    }
-
-    depenf(callback: Function, options?: DependencyOptions) {
+    depend(callback:  (...args: any[]) => any, options?: DependencyOptions) {
         const {isStrict} = options ?? {};
 
         if (isStrict !== undefined) {
@@ -38,8 +34,12 @@ class FunctionReactive extends Reactive<Function> {
     }
 }
 
-function fromFunction(value: Function) {
+export function fromFunction(value: Function) {
     return new FunctionReactive(value);
 }
 
-module.exports = {fromFunction};
+export function from(...reactives: FunctionReactive[]): FunctionReactive  {
+    const newReactive = new FunctionReactive();
+
+    return createDependencyChain(newReactive, reactives);
+}

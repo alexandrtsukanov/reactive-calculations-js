@@ -1,5 +1,4 @@
-const {fromValue} = require('./index.ts');
-const {from} = require('../reactive.ts');
+import { from, fromValue } from "./index.ts";
 
 describe('Строки', () => {
     const a = fromValue('abc');

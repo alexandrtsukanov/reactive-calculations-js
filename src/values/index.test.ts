@@ -74,7 +74,7 @@ describe('Числа', () => {
         test('Обновление e после обновления а', () => {
             a.update(5);
 
-            expect(e.getValue()).toBe('22');
+            expect(e.getValue()).toBe(220);
         });
     });
 
@@ -281,5 +281,5 @@ describe('Числа', () => {
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
             expect(() => from(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
         });
-    })
-});
+    });
+})

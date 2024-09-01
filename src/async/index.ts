@@ -51,7 +51,7 @@ export function fromAsync(value: Promise<any>) {
     return new AsyncReactive(value);
 }
 
-export function from(...reactives: AsyncReactive[]) {
+export function from(...reactives: AsyncReactive[]): AsyncReactive {
     const newReactive = new AsyncReactive();
 
     return createDependencyChain(newReactive, reactives);

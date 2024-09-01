@@ -18,7 +18,7 @@ export function fromBoolean(value: boolean) {
     return new BooleanReactive(value);
 }
 
-export function from(...reactives: BooleanReactive[]) {
+export function from(...reactives: BooleanReactive[]): BooleanReactive {
     const newReactive = new BooleanReactive();
 
     return createDependencyChain(newReactive, reactives);

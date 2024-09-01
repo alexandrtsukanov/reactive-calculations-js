@@ -5,7 +5,7 @@ export interface DependencyOptions {
 }
 
 export class Reactive<T> {
-    private value: T | null;
+    protected value: T | null;
     private deps: DependencyChain<T>;
     private parents: DependencyChain<T>;
     rule: ((...args: any[]) => T) | null;

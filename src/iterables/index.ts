@@ -56,13 +56,12 @@ class IterableReactive extends Reactive<Iterable<any>> {
     }
 }
 
-export function fromIterable(value: Array<any>) {
+export function fromIterable(value: Iterable<any>) {
     return new IterableReactive(value);
 }
 
-export function from(...reactives: IterableReactive[]) {
+export function from(...reactives: IterableReactive[]): IterableReactive {
     const newReactive = new IterableReactive();
-    newReactive.getValue()
 
     return createDependencyChain(newReactive, reactives);
 }

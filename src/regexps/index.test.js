@@ -1,3 +1,5 @@
+import { from, fromRegExp } from "./index.ts";
+
 describe('Регулярные выражения', () => {
     const pattern = 'a.123 text B.456 text c.789';
 

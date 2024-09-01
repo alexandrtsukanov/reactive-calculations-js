@@ -63,7 +63,7 @@ export function fromArray(value: Array<any>) {
     return new ArrayReactive(value);
 }
 
-export function from(...reactives: ArrayReactive[]) {
+export function from(...reactives: ArrayReactive[]): ArrayReactive {
     const newReactive = new ArrayReactive();
 
     return createDependencyChain(newReactive, reactives);

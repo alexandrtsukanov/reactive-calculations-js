@@ -1,17 +1,9 @@
-const Reactive = require('../sync.ts')
-
-interface DependencyOptions {
-    isStrict: boolean;
-}
+import { Reactive, createDependencyChain, DependencyOptions } from "../reactive.ts";
 
 type MapObject<T> = (key: string | Symbol, value: T) => [string, T];
 type FlatMapObject = (obj: Object) => Object;
 
-class OdjectReactive extends Reactive {
-    constructor(value: Object) {
-        super(value);
-    }
-
+class ObjectReactive extends Reactive<Object> {
     map(callback: MapObject<unknown>, options?: DependencyOptions) {
         this.checkDeps();
 
@@ -40,8 +32,12 @@ class OdjectReactive extends Reactive {
     }
 }
 
-function fromOgject(value: Array<any>) {
-    return new OdjectReactive(value);
+export function fromObject(value: Array<any>) {
+    return new ObjectReactive(value);
 }
 
-module.exports = {fromOgject};
+export function from(...reactives: ObjectReactive[]): ObjectReactive {
+    const newReactive = new ObjectReactive();
+
+    return createDependencyChain(newReactive, reactives);
+}

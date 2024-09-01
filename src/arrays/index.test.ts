@@ -1,6 +1,5 @@
 import {fromArray, from} from './index.ts';
 
-describe('Массивы', () => {
     describe('Простая зависимость', () => {
         const a = fromArray([1, 2, 3]);
         const b = from(a).map(el => el * 2);
@@ -13,9 +12,9 @@ describe('Массивы', () => {
             expect(b.getValue()).toEqual([2, 4, 6]);
         });
 
-        a.update(prev => prev.map(el => el + 1));
-
         test('Обновление а', () => {
+            a.update(prev => prev.map(el => el + 1));
+
             expect(a.getValue()).toEqual([2, 3, 4]);
         });
 
@@ -23,9 +22,9 @@ describe('Массивы', () => {
             expect(b.getValue()).toEqual([4, 6, 8]);
         });
 
-        a.update(prev => prev.filter(el => el % 2 === 0));
-
         test('Обновление b после обновления а через filter', () => {
+            a.update(prev => prev.filter(el => el % 2 === 0));
+
             expect(b.getValue()).toEqual([4, 8]);
         });
     })
@@ -59,12 +58,12 @@ describe('Массивы', () => {
         const a = fromArray([1]);
         const b = from(a).map(el => el * 2);
 
-        a.update(prev => {
-            prev.pop();
-            return prev;
-        });
-
         test('Обновление через pop, в результате пустой массив №1', () => {
+            a.update(prev => {
+                prev.pop();
+                return prev;
+            });
+
             expect(b.getValue()).toHaveLength(0);
         });
 
@@ -76,17 +75,17 @@ describe('Массивы', () => {
     describe('Освобождение от зависимостей', () => {
         const a = fromArray(['a', 'b', 'c']);
         const b = from(a).map(el => el + '!');
-
-        a.update(['d', 'e']);
-
+        
         test('Зависимость b от a', () => {
+            a.update(['d', 'e']);
+
             expect(b.getValue()).toEqual(['d!', 'e!'])
         });
 
-        a.free(b);
-        a.update(['f', 'g', 'h', 'i']);
-
         test('Освобождение b от a, b не равно новому значению', () => {
+            a.free(b);
+            a.update(['f', 'g', 'h', 'i']);
+
             expect(b.getValue()).not.toEqual(['f!', 'g!', 'h!', 'i!']);
         });
 
@@ -108,9 +107,9 @@ describe('Массивы', () => {
             expect(c.getValue()).toEqual([2, 4, 6])
         });
 
-        a.update([4, 5, 6]);
-
         test('Обновление b после обновления а', () => {
+            a.update([4, 5, 6]);
+
             expect(b.getValue()).toEqual([4, 5, 6, 4])
         });
 
@@ -129,11 +128,10 @@ describe('Массивы', () => {
             expect(c.getValue()).toEqual([1, 2, 3, 4, 5, 6])
         });
 
-        a.update(prev => [...prev, 100]);
-        b.update(prev => [...prev, 200]);
-
         test('Обновление c после обновления а и(или) b', () => {
+            a.update(prev => [...prev, 100]);
+            b.update(prev => [...prev, 200]);
+            
             expect(c.getValue()).toEqual([1, 2, 3, 100, 4, 5, 6, 200]);
         });
     })
-})

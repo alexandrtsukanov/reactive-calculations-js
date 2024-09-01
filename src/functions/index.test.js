@@ -1,3 +1,5 @@
+import { from, fromFunction } from "./index.ts";
+
 describe('Функции', () => {
     describe('Простая зависимость', () => {
         const f = (a, b) => a + b;

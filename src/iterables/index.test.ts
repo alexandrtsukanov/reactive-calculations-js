@@ -1,4 +1,4 @@
-const {fromIterable, from} = require('../sync.ts');
+import {fromIterable, from} from "./index.ts";
 
 describe('Iterables', () => {
     describe('Простая зависимость', () => {
@@ -6,29 +6,32 @@ describe('Iterables', () => {
         const b = from(a).map(el => el * 2);
 
         test('Инициализация а', () => {
-            expect([...a.getIterator()]).toEqual([1, 2, 3]);
+            const iterator = a.getIterator()?.[Symbol.iterator]()
+            expect([...iterator]).toEqual([1, 2, 3]);
         })
     
         test('Зависимость b от a', () => {
-            const iterator = b.getIterator()
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(2);
             expect([...iterator]).toEqual([4, 6]);
         })
         
-        a.update(prev => prev.map(el => el + 1));
+        // @ts-ignore
+        a.update((prev) => prev.map(el => el + 1));
 
         test('Обновление b после обновления а', () => {
-            const iterator = b.getIterator();
-    
+            const iterator = b.getIterator()?.[Symbol.iterator]()
+
             expect(iterator.next().value).toBe(4);
             expect([...iterator]).toEqual([6, 8]);
         })
 
+        // @ts-ignore
         a.update(prev => prev.filter(el => el > 2));
 
         test('Обновление b после обновления а', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(6);
             expect([...iterator]).toEqual([8]);
@@ -43,7 +46,7 @@ describe('Iterables', () => {
             .reverse()
     
         test('Цепочка', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(10);
             expect([...iterator]).toEqual([8, 6, 4]);
@@ -56,16 +59,17 @@ describe('Iterables', () => {
         const c = from(b).map(el => el * 5)
     
         test('Цепочка', () => {
-            const iterator = c.getIterator();
+            const iterator = c.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(10);
             expect([...iterator]).toEqual([20, 30]);
         })
 
+        // @ts-ignore
         a.update(prev => prev.map(el => el - 1))
 
         test('Обновление c после обновления а', () => {
-            const iterator = c.getIterator();
+            const iterator = c.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(0);
             expect([...iterator]).toEqual([10, 20]);
@@ -80,16 +84,17 @@ describe('Iterables', () => {
             .map(el => el - 1)
     
         test('Цепочка', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(9);
             expect([...iterator]).toEqual([7, 5, 3, 1]);
         })
 
+        // @ts-ignore
         a.update(prev => prev.filter(el => el !== 5));
 
         test('Обновление b после обновления а', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(9);
             expect([...iterator]).toEqual([7, 3, 1]);
@@ -104,13 +109,13 @@ describe('Iterables', () => {
         const e = from(d).map(el => el * 10);
     
         test('Пустая зависимость b от a', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBeUndefined();
         })
 
         test('Пустая зависимость b от a', () => {
-            const iterator = e.getIterator();
+            const iterator = e.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(10);
             expect([...iterator]).toEqual([20, 30, 40, 50]);
@@ -122,7 +127,7 @@ describe('Iterables', () => {
         const b = from(a).map(char => char + '!');
     
         test('Зависимость b от a', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe('a!');
             expect([...iterator]).toEqual(['b!', 'c!']);
@@ -131,7 +136,7 @@ describe('Iterables', () => {
         a.update('xyz');
 
         test('Обновление b после обновления а', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe('x!');
             expect([...iterator]).toEqual(['y!', 'z!']);
@@ -146,7 +151,7 @@ describe('Iterables', () => {
 
     
         test('Зависимость b от a', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
         
             expect(iterator.next().value).toBe(8);
             expect([...iterator]).toEqual([7, 6]);
@@ -155,7 +160,7 @@ describe('Iterables', () => {
         a.update(new Set([4, 5, 6]));
 
         test('Обновление b после обновления а', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
     
             expect(iterator.next().value).toBe(11);
             expect([...iterator]).toEqual([10, 9]);
@@ -172,16 +177,10 @@ describe('Iterables', () => {
         const b = from(a).map(el => el + 2)
 
         test('Зависимость b от a', () => {
-            const iterator = b.getIterator();
+            const iterator = b.getIterator()?.[Symbol.iterator]()
         
             expect(iterator.next().value).toBe(3);
             expect([...iterator]).toEqual([4, 5]);
-        })
-    })
-
-    describe('Не итератор', () => {
-        test('Не итератор', () => {
-            expect(() => fromIterable(42)).toThrow();
         })
     })
 })

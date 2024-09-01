@@ -4,8 +4,8 @@ export function fromValue(value: string) {
     return new Reactive(value);
 }
 
-export function from(...reactives: Reactive<string>[]) {
+export function from(...reactives: Reactive<string>[]): Reactive<string> {
     const newReactive = new Reactive<string>();
 
-    return createDependencyChain<string>(newReactive, reactives);
+    return createDependencyChain(newReactive, reactives);
 }
