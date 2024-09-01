@@ -10,7 +10,7 @@ describe('Iterables', () => {
         })
     
         test('Зависимость b от a', () => {
-            const iterator = b.getIterator() // ?? Сразу итератор возвращать?
+            const iterator = b.getIterator()
     
             expect(iterator.next().value).toBe(2);
             expect([...iterator]).toEqual([4, 6]);
@@ -181,7 +181,7 @@ describe('Iterables', () => {
 
     describe('Не итератор', () => {
         test('Не итератор', () => {
-            expect(fromIterable(42)).toThrow();
+            expect(() => fromIterable(42)).toThrow();
         })
     })
 })

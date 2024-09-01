@@ -17,7 +17,7 @@ describe('Простая зависимость', () => {
     })
 
     test('Обновление p1', () => {
-        p1.update(val => val + 1)
+        p1.update(val => val.then(val => val + 1))
 
         return expect(p2.getValue()).resolves.toBe(2);
     })
@@ -46,7 +46,7 @@ describe('Сложная зависимость от двух или более 
     })
 
     test('Обновление p1', () => {
-        p1.update(10)
+        p1.update(Promise.resolve(10))
 
         return expect(p1.getValue()).resolves.toBe(10);
     })
@@ -56,7 +56,7 @@ describe('Сложная зависимость от двух или более 
     })
 
     test('Обновление p2', () => {
-        p2.update(val => val - 1);
+        p2.update(val => val.then(val => val - 1));
 
         return expect(p2.getValue()).resolves.toBe(1);
     })
@@ -82,7 +82,7 @@ describe('Длинная цепочка зависимостей', () => {
     })
 
     test('Обновление p5 после обновления p1', () => {
-        p1.update(val => val + 3)
+        p1.update(val => val.then(val => val + 3))
 
         return expect(p5.getValue()).resolves.toBe('21');
     })
@@ -105,7 +105,7 @@ describe('Цепочка правила зависимости', () => {
     })
 
     test('Обновление p2 после обновления p1', () => {
-        p1.update('xyz')
+        p1.update(Promise.resolve('xyz'))
 
         return expect(p2.getValue()).resolves.toEqual(['prefix', 'xyz']);
     })

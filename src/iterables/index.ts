@@ -1,13 +1,12 @@
-import { DependencyOptions, Reactive } from "../reactive";
-
-type ArrayMethod<T> = (value: T) => T;
+import { ArrayMethod } from "../arrays";
+import { DependencyOptions, Reactive, createDependencyChain } from "../reactive";
 
 class IterableReactive extends Reactive<Iterable<any>> {
-    iterator: Iterator<any>;
+    iterator: Iterator<any> | undefined;
 
-    constructor(value: Iterable<any>) {
+    constructor(value: Iterable<any> | null = null) {
         super(value);
-        this.iterator = value[Symbol.iterator]();
+        this.iterator = value?.[Symbol.iterator]();
     }
 
     getIterator() {
@@ -57,8 +56,13 @@ class IterableReactive extends Reactive<Iterable<any>> {
     }
 }
 
-function fromIterable(value: Array<any>) {
+export function fromIterable(value: Array<any>) {
     return new IterableReactive(value);
 }
 
-module.exports = {fromIterable};
+export function from(...reactives: IterableReactive[]) {
+    const newReactive = new IterableReactive();
+    newReactive.getValue()
+
+    return createDependencyChain(newReactive, reactives);
+}

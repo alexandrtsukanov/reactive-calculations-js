@@ -1,6 +1,6 @@
 import {Reactive, DependencyOptions, createDependencyChain} from '../reactive.ts';
 
-type ArrayMethod<T> = (value: T) => T;
+export type ArrayMethod<T> = (value: T) => T;
 type FlatMapArray<T> = (this: undefined, value: T) => Array<T>;
 
 class ArrayReactive extends Reactive<Array<any>> {
