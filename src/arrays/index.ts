@@ -1,4 +1,4 @@
-import {Reactive, DependencyOptions} from '../reactive.ts';
+import {Reactive, DependencyOptions, createDependencyChain} from '../reactive.ts';
 
 type ArrayMethod<T> = (value: T) => T;
 type FlatMapArray<T> = (this: undefined, value: T) => Array<T>;
@@ -67,36 +67,4 @@ export function from(...reactives: ArrayReactive[]) {
     const newReactive = new ArrayReactive();
 
     return createDependencyChain(newReactive, reactives);
-}
-
-function createDependencyChain(dep: ArrayReactive, parents: ArrayReactive[]) {
-    let emptyReactiveMet = false;
-    let nonEmptyReactiveMet = false;
-
-    parents.forEach(parent => {
-        if (dep.getDeps().has(parent)) {
-            throw new Error('Cycle dependency');
-        }
-        
-        if (parent.isEmptyDep()) emptyReactiveMet = true;
-        if (!parent.isEmptyDep()) nonEmptyReactiveMet = true;
-
-        if (
-            (parent.isEmptyDep() && nonEmptyReactiveMet) ||
-            (!parent.isEmptyDep() && emptyReactiveMet)
-        ) {
-            throw new Error('Item cannot depend on both empty dependent item and non empty item');
-        }
-
-        parent.getDeps().add(dep);
-        dep.getParents().add(parent);
-
-        if (parent.isEmptyDep()) {
-            dep.closestNonEmptyParents.push(...parent.closestNonEmptyParents)
-        } else {
-            dep.closestNonEmptyParents.push(parent);
-        }
-    });
-
-    return dep;
 }

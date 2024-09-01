@@ -7,5 +7,5 @@ export function fromValue(value: number) {
 export function from(...reactives: Reactive<number>[]) {
     const newReactive = new Reactive<number>();
 
-    return createDependencyChain<number>(newReactive, reactives);
+    return createDependencyChain(newReactive, reactives);
 }

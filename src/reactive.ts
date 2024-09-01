@@ -102,7 +102,7 @@ export class Reactive<T> {
     }
 
     dependsOn(...reactives: Reactive<T>[]) {
-        const dep = createDependencyChain<T>(this, reactives);
+        const dep = createDependencyChain(this, reactives);
         dep.init();
 
         return dep;
@@ -147,7 +147,7 @@ export class Reactive<T> {
     }
 }
 
-export function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
+export function createDependencyChain(dep, parents) {
     let emptyReactiveMet = false;
     let nonEmptyReactiveMet = false;
 
