@@ -4,7 +4,7 @@
   "description": "READ.ME",
   "main": "index.js",
   "scripts": {
-    "test": "node index.test.ts"
+    "test": "jest src/values/index.test.ts"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,9 @@
   "homepage": "https://github.com/alexandrtsukanov/kobeza-core-course-work#readme",
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "jest": "29.7.0"
-  },
-  "dependencies": {
-    "typescript": "4.4.2"
+    "jest": "29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   }
 }

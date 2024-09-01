@@ -1,4 +1,4 @@
-const {fromBoolean, from} = require('../sync.ts');
+const {fromBoolean, from} = require('./index.ts');
 
 describe('Логические значения', () => {
     const a = fromBoolean(true);
@@ -29,9 +29,9 @@ describe('Логические значения', () => {
         expect(c.getValue()).toBe(false);
     })
 
-    a.toggle();
-
     test('Обновление a №1', () => {
+        a.toggle();
+
         expect(a.getValue()).toBeFalsy()
     })
 
@@ -48,16 +48,16 @@ describe('Логические значения', () => {
     })
 
     test('Обновление c после обновления a №1', () => {
-        expect(b.getValue()).toBeTruthy()
+        expect(c.getValue()).toBeTruthy()
     })
 
     test('Обновление c после обновления a №2', () => {
-        expect(b.getValue()).toBe(true)
+        expect(c.getValue()).toBe(true)
     })
 
-    a.update(val => !val);
-
     test('Зависимость b от a, поддержка обычного update №1', () => {
+        a.update(val => !val);
+
         expect(b.getValue()).toBeTruthy()
     })
 

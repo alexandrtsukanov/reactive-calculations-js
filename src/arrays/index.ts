@@ -1,4 +1,4 @@
-const Reactive = require('../sync.ts')
+const {Reactive} = require('../values/index.ts');
 
 interface DependencyOptions {
     isStrict: boolean;

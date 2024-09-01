@@ -1,14 +1,10 @@
-// import { DependencyChain } from "./types";
-
-type Exept = Exclude<null | undefined, any>;
-
 type DependencyChain<T> = Set<Reactive<T>>;
 
-interface DependencyOptions {
+export interface DependencyOptions {
     isStrict: boolean;
 }
 
-class Reactive<T extends NonNullable<any>> {
+export class Reactive<T> {
     private value: T | null;
     private deps: DependencyChain<T>;
     private parents: DependencyChain<T>;
@@ -95,13 +91,21 @@ class Reactive<T extends NonNullable<any>> {
         }
 
         this.rule = callback;
-        this.value = this.rule(...this.mapToValues(this.closestNonEmptyParents));
+
+        if (this.value === null) {
+            this.value = this.rule(...this.mapToValues(this.closestNonEmptyParents));
+        } else {
+            this.value = this.rule(this.value);          
+        }
 
         return this;
     }
 
     dependsOn(...reactives: Reactive<T>[]) {
-        return createDependencyChain<T>(this, reactives);
+        const dep = createDependencyChain<T>(this, reactives);
+        dep.init();
+
+        return dep;
     }
 
     free(...reactives: Reactive<T>[]) {
@@ -128,6 +132,10 @@ class Reactive<T extends NonNullable<any>> {
         return this.isDependent() && this.value === null && this.rule === null;
     }
 
+    private init() {
+        this.value = null;
+    }
+
     private mapToValues(reactives: Reactive<T>[]) {
         return reactives.map((reactive: Reactive<T>) => reactive.getValue());
     }
@@ -137,10 +145,6 @@ class Reactive<T extends NonNullable<any>> {
             throw new Error(`The current dependency method supports dependency of only one item. Now it depends on ${this.closestNonEmptyParents.length} items with values ${this.mapToValues(this.closestNonEmptyParents)}`);
         }
     }
-}
-
-function fromValue(value: number | string) {
-    return new Reactive<typeof value>(value);
 }
 
 function from<T>(...reactives: Reactive<T>[]) {
@@ -181,35 +185,4 @@ function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
     return dep;
 }
 
-const a = fromValue(1);
-const b = fromValue(2);
-const c = from(a);
-const d = from(b);
-const e = from(c, d).depend((a, b) => a + b);
-
-console.log(e.getValue());
-
-// const a = fromValue(1);
-// const b = fromValue(2);
-// const c = from(a);
-// const d = from(b);
-// const e = from(c, d).depend((a, b) => a + b + 5) // 8
-
-a.update(10)
-b.update(20)
-
-console.log(a.getValue());
-console.log(b.getValue());
-console.log(c.getValue());
-console.log(d.getValue());
-console.log(e.getValue());
-
-module.exports = {
-    Reactive,
-    fromValue,
-    from,
-}
-
-function sum(a: string, b: number | string) {
-    return a + b
-}
+module.exports = {from}

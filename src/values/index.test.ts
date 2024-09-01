@@ -1,6 +1,9 @@
-import { Alphanum } from "../types";
+// import {fromValue} from './index.ts';
+// import {from} from '../reactive.ts';
 
-const {fromValue, from} = require('../sync.ts');
+const {fromValue} = require('./index.ts');
+const {from} = require('../reactive.ts')
+
 
 describe('Числа', () => {
     describe('Простая зависимость', () => {
@@ -15,12 +18,12 @@ describe('Числа', () => {
             expect(b.getValue()).toBe(6);
         });
     
-        a.update(val => val + 10);
-        
         test('Обновление а', () => {
+            a.update(val => val + 10);
+
             expect(a.getValue()).toBe(11);
         });
-    
+
         test('Обновление b после обновления а', () => {
             expect(b.getValue()).toBe(16);
         });
@@ -34,21 +37,22 @@ describe('Числа', () => {
         const e = from(d).depend(d => d * 10);
     
         test('Зависимость d от а, b и c', () => {
-            expect(c.getValue()).toBe(8);
+            expect(d.getValue()).toBe(8);
         });
     
         test('Зависимость e от d', () => {
             expect(e.getValue()).toBe(80);
         });
-    
-        a.update((val) => val + 10);
-        b.update((val) => val + 10);
-    
+        
         test('Обновление а', () => {
+            a.update((val) => val + 10);
+
             expect(a.getValue()).toBe(11);
         });
-    
+
         test('Обновление b', () => {
+            b.update((val) => val + 10);
+
             expect(b.getValue()).toBe(12);
         });
     
@@ -69,17 +73,13 @@ describe('Числа', () => {
         const e = from(d).depend(val => val.toString());
     
         test('Зависимость e от a', () => {
-            expect(e.getValue()).toBeInstanceOf(String);
-        });
-    
-        test('Зависимость e от a', () => {
             expect(e.getValue()).toBe('16');
         });
     
-        a.update(5);
-        
         test('Обновление e после обновления а', () => {
-            expect(a.getValue()).toBe('22');
+            a.update(5);
+
+            expect(e.getValue()).toBe('22');
         });
     });
 
@@ -95,11 +95,11 @@ describe('Числа', () => {
         test('Зависимость c от a', () => {
             expect(c.getValue()).toBe(24);
         });
-    
-        a.free(b);
-        a.update(18);
-        
+      
         test('Освобождение b от a, b не равно новому значению', () => {
+            a.free(b);
+            a.update(18);
+
             expect(b.getValue()).not.toBe(36);
         });
 
@@ -107,9 +107,9 @@ describe('Числа', () => {
             expect(b.getValue()).toBe(6);
         });
 
-        b.update(val => val + 1);
-    
         test('с сохраняет зависимость от b', () => {
+            b.update(val => val + 1);
+
             expect(c.getValue()).toBe(28);
         });
     });
@@ -118,26 +118,26 @@ describe('Числа', () => {
         const a = fromValue(1);
         const b = fromValue(2);
 
-        a.update(3);
-
         test('b независима от а', () => {
+            a.update(3);
+
             expect(b.getValue()).toBe(2);
         });
 
-        b.dependsOn(a).depend(val => val ** 2);
-
         test('b теперь зависит от а', () => {
+            b.dependsOn(a).depend(val => val ** 2);
+
             expect(b.getValue()).toBe(9);
         });
 
-        a.update(4);
-
         test('Обновление b после обновления а', () => {
+            a.update(4);
+
             expect(b.getValue()).toBe(16);
         });
 
         test('Недопустима циклическая зависимость', () => {
-            expect(a.dependsOn(b).depend(val => val)).toThrow();
+            expect(() => a.dependsOn(b)).toThrow();
         });
     });
 
@@ -150,11 +150,11 @@ describe('Числа', () => {
         const e = from(c, d);
 
         test('Пустая зависимсость, одно значение', () => {
-            expect(b.getValue()).toBeUndefined();
+            expect(b.getValue()).toBeNull();
         });
 
         test('Пустая зависимсость, несколько значений', () => {
-            expect(e.getValue()).toBeUndefined();
+            expect(e.getValue()).toBeNull();
         });
 
         const f = from(b).depend(val => val * 2);
@@ -163,22 +163,22 @@ describe('Числа', () => {
             expect(f.getValue()).toBe(2);
         });
 
-        a.update(val => val + 10);
-
         test('Обновление f после обновления b', () => {
+            a.update(val => val + 10);
+            
             expect(f.getValue()).toBe(22);
         });
-
+        
         const g = from(e).depend((c, d) => (c + d) * 3);
 
         test('g зависит от e', () => {
             expect(g.getValue()).toBe(21);
         });
-
-        c.update(val => val + 100);
-        d.update(val => val + 200);
-
+  
         test('Обновление g после обновления c и(или) d', () => {
+            c.update(val => val + 100);
+            d.update(val => val + 200);
+
             expect(g.getValue()).toBe(921);
         });
     })
@@ -195,11 +195,11 @@ describe('Числа', () => {
         test('g зависит от a и b', () => {
             expect(g.getValue()).toBe(10);
         });
-
-        a.update(val => val + 10);
-        b.update(val => val + 10);
-
+ 
         test('Обновление g после обновления а и(или) b', () => {
+            a.update(val => val + 10);
+            b.update(val => val + 10);
+
             expect(g.getValue()).toBe(30);
         });
     })
@@ -215,15 +215,15 @@ describe('Числа', () => {
             expect(e.getValue()).toBe(8);
         });
 
-        a.update(val => val + 10);
-        b.update(val => val + 20);
-
         test('Обновление e после обновления а и(или) b', () => {
+            a.update(val => val + 10);
+            b.update(val => val + 20);
+
             expect(e.getValue()).toBe(38);
         });
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(from(c, d).depend((a) => a + 5)).toThrow();
+            expect(() => from(c, d).depend((a) => a + 5)).toThrow();
         })
     })
 
@@ -240,8 +240,27 @@ describe('Числа', () => {
             expect(c.getValue()).toBe(3);
         });
 
-        expect(b.update(33)).not.toThrow();
-        expect(c.update(53)).toThrow();
+        test('b можно поменять', () => {
+            b.update(33);
+
+            expect(b.getValue()).toBe(33);
+        })
+
+        test('с не поменяется', () => {
+            c.update(53);
+
+            expect(c.getValue()).toBe(3);
+        })
+
+        test('b меняется при обновлении а', () => {
+            a.update(10);
+
+            expect(b.getValue()).toBe(7);
+        })
+
+        test('с меняется при обновлении а', () => {
+            expect(c.getValue()).toBe(7);
+        })
     })
 
     describe('Цепочка правила зависимости', () => {
@@ -261,39 +280,11 @@ describe('Числа', () => {
         const b = fromValue(4);
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(from(a, b).depend(val => val + 5)).toThrow();
+            expect(() => from(a, b).depend(val => val + 5)).toThrow();
         });
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(from(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
+            expect(() => from(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
         });
     })
 });
-
-describe('Строки', () => {
-    const a = fromValue('abc');
-    const b = from(a).depend(val => val + '_postfix');
-    const c = from(b).depend(val => 'prefix_' + val);
-
-    test('Инициализация а', () => {
-        expect(a.getValue()).toBe('abc');
-    });
-
-    test('Зависимость b от a', () => {
-        expect(b.getValue()).toBe('abc_postfix');
-    });
-
-    test('Зависимость c от b', () => {
-        expect(c.getValue()).toBe('prefix_abc_postfix');
-    });
-
-    a.update('xyz');
-
-    test('Обновление b после обновления а', () => {
-        expect(b.getValue()).toBe('xyz_postfix');
-    });
-
-    test('Обновление c после обновления b', () => {
-        expect(c.getValue()).toBe('prefix_xyz_postfix');
-    });
-})

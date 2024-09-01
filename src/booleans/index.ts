@@ -1,11 +1,11 @@
-const Reactive = require('../sync.ts');
+const {Reactive} = require('../reactive.ts');
 
 interface DependencyOptions {
     isStrict: boolean;
 }
 
-class BooleanReactive extends Reactive {
-    constructor(value: boolean) {
+class BooleanReactive extends Reactive<boolean> {
+    constructor(value: boolean | null = null) {
         super(value)
     }
 
@@ -26,4 +26,42 @@ function fromBoolean(value: boolean) {
     return new BooleanReactive(value);
 }
 
-module.exports = {fromBoolean};
+function from<T>(...reactives: BooleanReactive[]) {
+    const newReactive = new BooleanReactive();
+
+    return createDependencyChain<T>(newReactive, reactives);
+}
+
+function createDependencyChain<T>(dep: BooleanReactive, parents: BooleanReactive[]) {
+    let emptyReactiveMet = false;
+    let nonEmptyReactiveMet = false;
+
+    parents.forEach(parent => {
+        if (dep.getDeps().has(parent)) {
+            throw new Error('Cycle dependency');
+        }
+        
+        if (parent.isEmptyDep()) emptyReactiveMet = true;
+        if (!parent.isEmptyDep()) nonEmptyReactiveMet = true;
+
+        if (
+            (parent.isEmptyDep() && nonEmptyReactiveMet) ||
+            (!parent.isEmptyDep() && emptyReactiveMet)
+        ) {
+            throw new Error('Item cannot depend on both empty dependent item and non empty item');
+        }
+
+        parent.getDeps().add(dep);
+        dep.getParents().add(parent);
+
+        if (parent.isEmptyDep()) {
+            dep.closestNonEmptyParents.push(...parent.closestNonEmptyParents)
+        } else {
+            dep.closestNonEmptyParents.push(parent);
+        }
+    });
+
+    return dep;
+}
+
+module.exports = {fromBoolean, from};

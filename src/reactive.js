@@ -1,4 +1,3 @@
-// import { DependencyChain } from "./types";
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -22,10 +21,10 @@ var Reactive = /** @class */ (function () {
         return this.value;
     };
     Reactive.prototype.update = function (newValue) {
-        if (this.isDependent() && this.isStrict) {
+        if (this.value === null) {
             return;
         }
-        if (this.value === null) {
+        if (this.isDependent() && this.isStrict) {
             return;
         }
         if (newValue instanceof Function) {
@@ -73,38 +72,26 @@ var Reactive = /** @class */ (function () {
         if (isStrict !== undefined) {
             this.isStrict = isStrict;
         }
-        var arrayOfParents = Array.from(this.closestNonEmptyParents);
-        if (callback.length !== arrayOfParents.length) {
-            throw new Error("Item depends on ".concat(arrayOfParents.length, " items, but you passed ").concat(callback.length, " arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on"));
+        if (callback.length !== this.closestNonEmptyParents.length) {
+            throw new Error("Item depends on ".concat(this.closestNonEmptyParents.length, " items, but you passed ").concat(callback.length, " arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on"));
         }
         this.rule = callback;
-        this.value = this.rule.apply(this, this.mapToValues(arrayOfParents));
+        if (this.value === null) {
+            this.value = this.rule.apply(this, this.mapToValues(this.closestNonEmptyParents));
+        }
+        else {
+            this.value = this.rule(this.value);
+        }
         return this;
     };
     Reactive.prototype.dependsOn = function () {
-        var _this = this;
         var reactives = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             reactives[_i] = arguments[_i];
         }
-        var emptyReactiveMet = false;
-        var nonEmptyReactiveMet = false;
-        reactives.forEach(function (reactive) {
-            if (_this.deps.has(reactive)) {
-                throw new Error('Cycle dependency');
-            }
-            if (reactive.isEmptyDep())
-                emptyReactiveMet = true;
-            if (!reactive.isEmptyDep())
-                nonEmptyReactiveMet = true;
-            if ((reactive.isEmptyDep() && nonEmptyReactiveMet) ||
-                (!reactive.isEmptyDep() && emptyReactiveMet)) {
-                throw new Error('Item cannot depend on both empty dependent item and non empty item');
-            }
-            reactive.getDeps().add(_this);
-            _this.parents.add(reactive);
-        });
-        return this;
+        var dep = createDependencyChain(this, reactives);
+        dep.init();
+        return dep;
     };
     Reactive.prototype.free = function () {
         var _this = this;
@@ -134,8 +121,16 @@ var Reactive = /** @class */ (function () {
     Reactive.prototype.isEmptyDep = function () {
         return this.isDependent() && this.value === null && this.rule === null;
     };
+    Reactive.prototype.init = function () {
+        this.value = null;
+    };
     Reactive.prototype.mapToValues = function (reactives) {
         return reactives.map(function (reactive) { return reactive.getValue(); });
+    };
+    Reactive.prototype.checkDeps = function () {
+        if (this.closestNonEmptyParents.length > 1) {
+            throw new Error("The current dependency method supports dependency of only one item. Now it depends on ".concat(this.closestNonEmptyParents.length, " items with values ").concat(this.mapToValues(this.closestNonEmptyParents)));
+        }
     };
     return Reactive;
 }());
@@ -148,35 +143,42 @@ function from() {
         reactives[_i] = arguments[_i];
     }
     var newReactive = new Reactive();
+    return createDependencyChain(newReactive, reactives);
+}
+function createDependencyChain(dep, parents) {
     var emptyReactiveMet = false;
     var nonEmptyReactiveMet = false;
-    reactives.forEach(function (reactive) {
+    parents.forEach(function (parent) {
         var _a;
-        if (reactive.isEmptyDep())
+        if (dep.getDeps().has(parent)) {
+            throw new Error('Cycle dependency');
+        }
+        if (parent.isEmptyDep())
             emptyReactiveMet = true;
-        if (!reactive.isEmptyDep())
+        if (!parent.isEmptyDep())
             nonEmptyReactiveMet = true;
-        if ((reactive.isEmptyDep() && nonEmptyReactiveMet) ||
-            (!reactive.isEmptyDep() && emptyReactiveMet)) {
+        if ((parent.isEmptyDep() && nonEmptyReactiveMet) ||
+            (!parent.isEmptyDep() && emptyReactiveMet)) {
             throw new Error('Item cannot depend on both empty dependent item and non empty item');
         }
-        reactive
-            .getDeps()
-            .add(newReactive);
-        newReactive.getParents().add(reactive);
-        if (reactive.isEmptyDep()) {
-            (_a = newReactive.closestNonEmptyParents).push.apply(_a, reactive.closestNonEmptyParents);
+        parent.getDeps().add(dep);
+        dep.getParents().add(parent);
+        if (parent.isEmptyDep()) {
+            (_a = dep.closestNonEmptyParents).push.apply(_a, parent.closestNonEmptyParents);
         }
         else {
-            newReactive.closestNonEmptyParents.push(reactive);
+            dep.closestNonEmptyParents.push(parent);
         }
     });
-    return newReactive;
+    return dep;
 }
+var r = new Reactive(undefined);
+console.log(r.getValue());
 var a = fromValue(1);
 var b = fromValue(2);
 var c = from(a);
 var d = from(b);
+//@ts-ignore
 var e = from(c, d).depend(function (a, b) { return a + b; });
 console.log(e.getValue());
 // const a = fromValue(1);
@@ -193,6 +195,6 @@ console.log(d.getValue());
 console.log(e.getValue());
 module.exports = {
     Reactive: Reactive,
-    fromValue: fromValue,
+    createDependencyChain: createDependencyChain,
     from: from,
 };
