@@ -11,6 +11,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Reactive = void 0;
 exports.createDependencyChain = createDependencyChain;
+var pipe_1 = require("./utils/pipe");
 var Reactive = /** @class */ (function () {
     function Reactive(value) {
         if (value === void 0) { value = null; }
@@ -31,13 +32,13 @@ var Reactive = /** @class */ (function () {
         if (this.isDependent() && this.isStrict) {
             return;
         }
-        if (newValue instanceof Function) {
-            this.value = newValue(this.value);
-        }
-        else {
-            this.value = newValue;
-        }
-        this.updateDeps();
+        // @ts-ignore
+        this.value = newValue;
+        // if (newValue instanceof Function) {
+        //     this.value = newValue(this.value)
+        // } else {
+        // }
+        // this.updateDeps();
     };
     Reactive.prototype.updateDeps = function () {
         var queue = Array.from(this.deps);
@@ -61,20 +62,7 @@ var Reactive = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             parents[_i - 1] = arguments[_i];
         }
-        var pipe = function (fns) { return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var firstFn = fns[0];
-            var firstResult = firstFn.apply(void 0, args);
-            return fns
-                .slice(1)
-                .reduce(function (res, fn) { return fn(res); }, firstResult);
-        }; };
-        if (callbacks) {
-            this.value = pipe(callbacks).apply(void 0, this.mapToValues(parents));
-        }
+        this.value = (0, pipe_1.pipe)(callbacks).apply(void 0, this.mapToValues(parents));
     };
     Reactive.prototype.getDeps = function () {
         return this.deps;

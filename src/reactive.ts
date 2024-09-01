@@ -1,3 +1,5 @@
+import { pipe } from "./utils/pipe";
+
 type DependencyChain<T> = Set<Reactive<T>>;
 
 export interface DependencyOptions {
@@ -33,13 +35,15 @@ export class Reactive<T> {
             return;
         }
 
-        if (newValue instanceof Function) {
-            this.value = newValue(this.value)
-        } else {
-            this.value = newValue;
-        }
+        // @ts-ignore
+        this.value = newValue;
 
-        this.updateDeps();
+        // if (newValue instanceof Function) {
+        //     this.value = newValue(this.value)
+        // } else {
+        // }
+
+        // this.updateDeps();
     }
 
     private updateDeps() {
@@ -66,18 +70,7 @@ export class Reactive<T> {
     }
  
     updateDep(callbacks: ((...args: (T)[]) => T)[], ...parents: Reactive<T>[]) {
-        const pipe = fns => (...args) => {
-            const firstFn = fns[0];
-            const firstResult = firstFn(...args);
-
-            return fns
-                .slice(1)
-                .reduce((res, fn) => fn(res), firstResult)
-        }
-        
-        if (callbacks) {
-            this.value = pipe(callbacks)(...this.mapToValues(parents));
-        }
+        this.value = pipe(callbacks)(...this.mapToValues(parents));
     }
 
     getDeps() {

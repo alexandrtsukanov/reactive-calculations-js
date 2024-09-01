@@ -28,7 +28,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
 
             this.asyncValue = parents
                 .then(values => {
-                    this.rule = callback;
+                    this.rules.push(callback);
 
                     return this.rule(...values);
                 })
@@ -36,7 +36,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
         } else {
             this.asyncValue
                 .then(value => {
-                    this.rule = callback;
+                    this.rules.push(callback);
 
                     return this.rule(value);
                 })
