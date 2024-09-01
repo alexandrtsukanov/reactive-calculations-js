@@ -4,6 +4,10 @@ const REGEXP_FLAGS = ['g', 'i', 's', 'm', 'u', 'y', 'd'] as const;
 type RegExpFlag = typeof REGEXP_FLAGS[number];
 
 class RegExpReactive extends Reactive<RegExp> {
+    getValue() {
+        return this.value ?? new RegExp('');
+    }
+
     addFlags(flags: RegExpFlag[], options?: DependencyOptions) {
         const newRegExp = new RegExp(
             this.value?.source || '',

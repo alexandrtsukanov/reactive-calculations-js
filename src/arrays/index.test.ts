@@ -1,5 +1,6 @@
 import {fromArray, from} from './index.ts';
 
+describe('Массивы', () => {
     describe('Простая зависимость', () => {
         const a = fromArray([1, 2, 3]);
         const b = from(a).map(el => el * 2);
@@ -127,11 +128,12 @@ import {fromArray, from} from './index.ts';
         test('Зависимость b от a', () => {
             expect(c.getValue()).toEqual([1, 2, 3, 4, 5, 6])
         });
-
+        
         test('Обновление c после обновления а и(или) b', () => {
             a.update(prev => [...prev, 100]);
             b.update(prev => [...prev, 200]);
-            
+
             expect(c.getValue()).toEqual([1, 2, 3, 100, 4, 5, 6, 200]);
         });
     })
+})

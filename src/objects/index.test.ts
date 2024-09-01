@@ -1,5 +1,6 @@
 import { from, fromObject } from "./index.ts";
 
+describe('Объекты', () => {
     describe('Простая зависимость', () => {
         const a = fromObject({a: 1, b: 2});
         const b = from(a).depend(val => ({...val, b: val.b + 10}));
@@ -19,7 +20,7 @@ import { from, fromObject } from "./index.ts";
         });
     
         test('Обновление b после обновления а', () => {
-            expect(a.getValue()).toEqual({a: 2, b: 13, c: 4});
+            expect(b.getValue()).toEqual({a: 1, b: 13, c: 4});
         });
     });
 
@@ -56,7 +57,8 @@ import { from, fromObject } from "./index.ts";
         });
 
         test('Удалили поля', () => {
-            expect(b.getValue()).toEqual({c: 6, d: 7});
+            expect(b.getValue()?.a).toBeNaN();
+            expect(b.getValue()?.b).toBeNaN();
         });
  
         test('Обновление а через прямую замену с возвращением полей', () => {
@@ -69,14 +71,14 @@ import { from, fromObject } from "./index.ts";
             expect(b.getValue()).toEqual({a: 17, b: 28});
         });
 
-        test('Обновление а через прямую замену с частичным возвращением полей', () => {
-            a.update({b: 9});
+        test('Обновление а через прямую замену с возвращением полей', () => {
+            a.update({b: 9, a: 10});
 
-            expect(a.getValue()).toEqual({b: 9});
+            expect(a.getValue()).toEqual({a: 10, b: 9});
         });
 
         test('Вернули поля', () => {
-            expect(b.getValue()).toEqual({b: 29});
+            expect(b.getValue()).toEqual({a: 20, b: 29});
         });
     });
 
@@ -85,10 +87,12 @@ import { from, fromObject } from "./index.ts";
         const b = from(a)
             .depend(val => ({...val, b: val.b * 2}))
             .depend(val => ({...val, a: val.a * 3}))
-            .depend(val => ({
-                ...val, 
+            .depend(val => ({...val, 
                 a: val.a + 1,
                 b: val.b + 2,
+            }))
+            .depend(val => ({
+                ...val,
                 c: val.a + val.b,
             }))
     
@@ -99,7 +103,7 @@ import { from, fromObject } from "./index.ts";
         test('Обновление b после обновления а', () => {
             a.update(prev => ({...prev, a: 3, b: 4}));
 
-            expect(a.getValue()).toEqual({a: 10, b: 10, c: 20});
+            expect(b.getValue()).toEqual({a: 10, b: 10, c: 20});
         });
     });
 
@@ -116,13 +120,21 @@ import { from, fromObject } from "./index.ts";
         }));
 
         test('Зависимость d от a', () => {
-            expect(b.getValue()).toEqual({a: 0, b: 4, c: 100, d: 200});
+            expect(d.getValue()).toEqual({a: 0, b: 4, c: 100, d: 200});
+        });
+
+        test('Зависимость с от a', () => {
+            expect(c.getValue()).toEqual({a: 1, b: 4, c: 100});
+        });
+
+        test('Пустая зависимость b от a', () => {
+            expect(b.getValue()).toBeNull()
         });
     
         test('Обновление d после обновления а', () => {
             a.update(prev => ({...prev, a: 3, b: 4}));
 
-            expect(a.getValue()).toEqual({a: 2, b: 6, c: 100, d: 200});
+            expect(d.getValue()).toEqual({a: 2, b: 6, c: 100, d: 200});
         });
     });
 
@@ -137,7 +149,7 @@ import { from, fromObject } from "./index.ts";
         test('Обновление d после обновления а', () => {
             a.update({a: 4, b: 5, c: 6});
 
-            expect(a.getValue()).toEqual({'64': 10});
+            expect(b.getValue()).toEqual({'64': 10});
         });
     });
 
@@ -145,14 +157,14 @@ import { from, fromObject } from "./index.ts";
         const a = fromObject({a: 1, b: 2, c: 3});
         const b = from(a).map((key, value) => [value, key]);
 
-        test('Зависимость d от a', () => {
+        test('Зависимость b от a', () => {
             expect(b.getValue()).toEqual({'1': 'a', '2': 'b', '3': 'c'});
         });
     
-        test('Обновление d после обновления а', () => {
+        test('Обновление b после обновления а', () => {
             a.update({a: 4, b: 5, c: 6});
 
-            expect(a.getValue()).toEqual({'4': 'a', '5': 'b', '6': 'c'});
+            expect(b.getValue()).toEqual({'4': 'a', '5': 'b', '6': 'c'});
         });
     });
 
@@ -167,18 +179,19 @@ import { from, fromObject } from "./index.ts";
         });
 
         test('b теперь зависит от а', () => {
-            b.dependsOn(a).depend(val => ({...val, b: val.a}));
+            b.dependsOn(a).depend(val => ({b: val.a}));
 
-            expect(b.getValue()).toBe({b: 10});
+            expect(b.getValue()).toEqual({b: 10});
         });
 
         test('Обновление b после обновления а', () => {
             a.update({a: 20});
             
-            expect(b.getValue()).toBe({b: 20});
+            expect(b.getValue()).toEqual({b: 20});
         });
 
         test('Недопустима циклическая зависимость', () => {
-            expect(a.dependsOn(b).depend(val => val)).toThrow();
+            expect(() => a.dependsOn(b)).toThrow();
         });
     });
+});

@@ -1,10 +1,10 @@
-import { Reactive, createDependencyChain } from "../reactive";
-
-interface DependencyOptions {
-    isStrict: boolean;
-}
+import {Reactive, createDependencyChain, DependencyOptions} from "../reactive.ts";
 
 class FunctionReactive extends Reactive<Function> {
+    getValue() {
+        return this.value ?? (() => {});
+    }
+
     depend(callback:  (...args: any[]) => any, options?: DependencyOptions) {
         const {isStrict} = options ?? {};
 

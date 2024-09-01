@@ -8,7 +8,7 @@ export class Reactive<T> {
     protected value: T | null;
     private deps: DependencyChain<T>;
     private parents: DependencyChain<T>;
-    rule: ((...args: any[]) => T) | null;
+    rules: ((...args: any[]) => T)[];
     closestNonEmptyParents: Reactive<T>[];
     isStrict = true;
 
@@ -16,7 +16,7 @@ export class Reactive<T> {
         this.value = value;
         this.deps = new Set();
         this.parents = new Set();
-        this.rule = null;
+        this.rules = [];
         this.closestNonEmptyParents = [];
     }
 
@@ -48,11 +48,11 @@ export class Reactive<T> {
 
         while (cursor < queue.length) {
             const reactive = queue[cursor];
-            const {rule} = reactive;
+            const {rules} = reactive;
 
             if (!reactive.isEmptyDep()) {
                 const arrayOfParents = reactive.closestNonEmptyParents;
-                reactive.updateDep(rule, ...arrayOfParents);
+                reactive.updateDep(rules, ...arrayOfParents);
             }
 
             const dependencies = reactive.getDeps();
@@ -65,9 +65,18 @@ export class Reactive<T> {
         }
     }
  
-    updateDep(callback: ((...args: (T | null)[]) => T) | null, ...parents: Reactive<T>[]) {
-        if (callback) {
-            this.value = callback(...this.mapToValues(parents));
+    updateDep(callbacks: ((...args: (T)[]) => T)[], ...parents: Reactive<T>[]) {
+        const pipe = fns => (...args) => {
+            const firstFn = fns[0];
+            const firstResult = firstFn(...args);
+
+            return fns
+                .slice(1)
+                .reduce((res, fn) => fn(res), firstResult)
+        }
+        
+        if (callbacks) {
+            this.value = pipe(callbacks)(...this.mapToValues(parents));
         }
     }
 
@@ -79,7 +88,7 @@ export class Reactive<T> {
         return this.parents;
     }
 
-    depend(callback: (...args: T[]) => T, options?: DependencyOptions) {
+    depend(callback: (...args: any[]) => T, options?: DependencyOptions) {
         const {isStrict} = options ?? {};
 
         if (isStrict !== undefined) {
@@ -90,12 +99,12 @@ export class Reactive<T> {
             throw new Error(`Item depends on ${this.closestNonEmptyParents.length} items, but you passed ${callback.length} arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on`);
         }
 
-        this.rule = callback;
+        this.rules.push(callback);
 
         if (this.value === null) {
-            this.value = this.rule(...this.mapToValues(this.closestNonEmptyParents));
+            this.value = callback(...this.mapToValues(this.closestNonEmptyParents));
         } else {
-            this.value = this.rule(this.value);          
+            this.value = callback(this.value);          
         }
 
         return this;
@@ -129,10 +138,10 @@ export class Reactive<T> {
     }
 
     isEmptyDep() {
-        return this.isDependent() && this.value === null && this.rule === null;
+        return this.isDependent() && this.value === null;
     }
 
-    private init() {
+    init() {
         this.value = null;
     }
 

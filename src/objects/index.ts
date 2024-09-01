@@ -1,10 +1,14 @@
 import { Reactive, createDependencyChain, DependencyOptions } from "../reactive.ts";
 
+interface Object {
+    [key: string]: any  
+}
+
 type MapObject<T> = (key: string | Symbol, value: T) => [string, T];
 type FlatMapObject = (obj: Object) => Object;
 
 class ObjectReactive extends Reactive<Object> {
-    map(callback: MapObject<unknown>, options?: DependencyOptions) {
+    map(callback: MapObject<any>, options?: DependencyOptions) {
         this.checkDeps();
 
         const mapObject = obj => {
@@ -32,7 +36,7 @@ class ObjectReactive extends Reactive<Object> {
     }
 }
 
-export function fromObject(value: Array<any>) {
+export function fromObject(value: Object) {
     return new ObjectReactive(value);
 }
 
