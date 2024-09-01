@@ -1,3 +1,5 @@
+// import { createDependencyChain } from "./utils/create-deps";
+
 type DependencyChain<T> = Set<Reactive<T>>;
 
 export interface DependencyOptions {
@@ -147,13 +149,13 @@ export class Reactive<T> {
     }
 }
 
-function from<T>(...reactives: Reactive<T>[]) {
+export function from<T>(...reactives: Reactive<T>[]) {
     const newReactive = new Reactive<T>();
 
     return createDependencyChain<T>(newReactive, reactives);
 }
 
-function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
+export function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
     let emptyReactiveMet = false;
     let nonEmptyReactiveMet = false;
 
@@ -184,5 +186,3 @@ function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {
 
     return dep;
 }
-
-module.exports = {from}

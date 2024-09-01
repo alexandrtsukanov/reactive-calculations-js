@@ -1,9 +1,4 @@
-// import {fromValue} from './index.ts';
-// import {from} from '../reactive.ts';
-
-const {fromValue} = require('./index.ts');
-const {from} = require('../reactive.ts')
-
+import {fromValue, from} from './index.ts';
 
 describe('Числа', () => {
     describe('Простая зависимость', () => {
@@ -70,10 +65,10 @@ describe('Числа', () => {
         const b = from(a).depend(val => val + 10);
         const c = from(b).depend(val => val - 4);
         const d = from(c).depend(val => val * 2);
-        const e = from(d).depend(val => val.toString());
+        const e = from(d).depend(val => val * 10);
     
         test('Зависимость e от a', () => {
-            expect(e.getValue()).toBe('16');
+            expect(e.getValue()).toBe(160);
         });
     
         test('Обновление e после обновления а', () => {

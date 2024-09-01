@@ -1,4 +1,4 @@
-const {fromBoolean, from} = require('./index.ts');
+import { from, fromBoolean } from "./index.ts";
 
 describe('Логические значения', () => {
     const a = fromBoolean(true);

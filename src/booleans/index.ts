@@ -1,14 +1,10 @@
-const {Reactive} = require('../reactive.ts');
+import { Reactive } from "../reactive";
 
 interface DependencyOptions {
     isStrict: boolean;
 }
 
-class BooleanReactive extends Reactive<boolean> {
-    constructor(value: boolean | null = null) {
-        super(value)
-    }
-
+export class BooleanReactive extends Reactive<boolean> {
     same(options?: DependencyOptions) {
         return this.depend(value => value, options);
     }
@@ -22,17 +18,17 @@ class BooleanReactive extends Reactive<boolean> {
     }
 }
 
-function fromBoolean(value: boolean) {
+export function fromBoolean(value: boolean) {
     return new BooleanReactive(value);
 }
 
-function from<T>(...reactives: BooleanReactive[]) {
+export function from<T>(...reactives: BooleanReactive[]) {
     const newReactive = new BooleanReactive();
 
-    return createDependencyChain<T>(newReactive, reactives);
+    return createDependencyChain(newReactive, reactives);
 }
 
-function createDependencyChain<T>(dep: BooleanReactive, parents: BooleanReactive[]) {
+function createDependencyChain(dep: BooleanReactive, parents: BooleanReactive[]) {
     let emptyReactiveMet = false;
     let nonEmptyReactiveMet = false;
 
@@ -63,5 +59,3 @@ function createDependencyChain<T>(dep: BooleanReactive, parents: BooleanReactive
 
     return dep;
 }
-
-module.exports = {fromBoolean, from};
