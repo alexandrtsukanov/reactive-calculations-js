@@ -136,7 +136,7 @@ export class Reactive<T> {
         this.value = null;
     }
 
-    private mapToValues(reactives: Reactive<T>[]) {
+    protected mapToValues(reactives: Reactive<T>[]) {
         return reactives.map((reactive: Reactive<T>) => reactive.getValue());
     }
 
