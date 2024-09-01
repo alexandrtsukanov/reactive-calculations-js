@@ -43,7 +43,7 @@ export class Reactive<T> {
     }
 
     private updateDeps() {
-        const queue: Reactive<T>[] = Array.from(this.deps);
+        const queue: Reactive<T>[] = Array.from(this.deps)
         let cursor = 0;
 
         while (cursor < queue.length) {
@@ -96,7 +96,10 @@ export class Reactive<T> {
         }
         
         if (callback.length !== this.closestNonEmptyParents.length) {
-            throw new Error(`Item depends on ${this.closestNonEmptyParents.length} items, but you passed ${callback.length} arguments. Amount of arguments of dependency callback must be equal to amount of items this item depends on`);
+            throw new Error(`
+                Item depends on ${this.closestNonEmptyParents.length} items, but you passed ${callback.length} arguments.
+                Amount of arguments of dependency callback must be equal to amount of items this item depends on
+            `);
         }
 
         this.rules.push(callback);
@@ -151,7 +154,10 @@ export class Reactive<T> {
 
     protected checkDeps() {
         if (this.closestNonEmptyParents.length > 1) {
-            throw new Error(`The current dependency method supports dependency of only one item. Now it depends on ${this.closestNonEmptyParents.length} items with values ${this.mapToValues(this.closestNonEmptyParents)}`);
+            throw new Error(`
+                The current dependency method supports dependency of only one item.
+                Now it depends on ${this.closestNonEmptyParents.length} items with values ${this.mapToValues(this.closestNonEmptyParents)}
+            `);
         }
     }
 }

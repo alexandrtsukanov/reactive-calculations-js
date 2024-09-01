@@ -27,7 +27,7 @@ class FunctionReactive extends Reactive<Function> {
                 .reduce((res, fn) => fn(res), firstResult)
         }
 
-        this.rule = callback;
+        this.rules.push(callback);
         this.value = pipe([...this.closestNonEmptyParents, this.rule]);
 
         return this;        

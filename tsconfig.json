@@ -21,7 +21,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "moduleDetection": "force",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "downlevelIteration": true
   },
   "include": [
     "src"

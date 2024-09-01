@@ -9,35 +9,48 @@ class RegExpReactive extends Reactive<RegExp> {
     }
 
     addFlags(flags: RegExpFlag[], options?: DependencyOptions) {
-        const newRegExp = new RegExp(
-            this.value?.source || '',
-            this.prepareFlagsAdded(flags),
-        )
+        const cb = (prevRegExp: RegExp) => {
+            const newRegExp = new RegExp(
+                prevRegExp?.source ?? '',
+                this.prepareFlagsAdded(
+                    prevRegExp.flags,
+                    flags,
+                ),
+            )
 
-        const cb = () => newRegExp;
+            return newRegExp;
+        };
 
         return this.depend(cb, options);
     }
 
     removeFlags(flags: RegExpFlag[], options?: DependencyOptions) {
-        const newRegExp = new RegExp(
-            this.value?.source ?? '',
-            this.prepareFlagsRemoved(flags),
-        )
+        const cb = (prevRegExp: RegExp) => {
+            const newRegExp = new RegExp(
+                prevRegExp?.source ?? '',
+                this.prepareFlagsRemoved(
+                    prevRegExp.flags,
+                    flags
+                ),
+            )
 
-        const cb = () => newRegExp;
+            return newRegExp;
+        };
 
         return this.depend(cb, options);
     }
 
-    private prepareFlagsAdded(newflags: RegExpFlag[]) {
-        const set = new Set([...this.value?.flags ?? '', ...newflags]);
+    private prepareFlagsAdded(oldFlags: string, newflags: RegExpFlag[]) {
+        const set = new Set([
+            ...oldFlags.split('') ?? [],
+            ...newflags
+        ]);
 
         return Array.from(set).join('');
     }
 
-    private prepareFlagsRemoved(flags: RegExpFlag[]) {
-        const set = new Set(this.value?.flags ?? '');
+    private prepareFlagsRemoved(oldFlags: string, flags: RegExpFlag[]) {
+        const set = new Set(oldFlags);
 
         flags.forEach(flag => set.delete(flag));
 
