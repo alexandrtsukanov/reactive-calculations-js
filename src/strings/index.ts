@@ -1,7 +1,11 @@
-const {Reactive} = require('../reactive.ts');
+import {Reactive, createDependencyChain} from '../reactive.ts';
 
-function fromValue(value: string) {
+export function fromValue(value: string) {
     return new Reactive(value);
 }
 
-module.exports = {fromValue};
+export function from(...reactives: Reactive<string>[]) {
+    const newReactive = new Reactive<string>();
+
+    return createDependencyChain<string>(newReactive, reactives);
+}

@@ -1,8 +1,4 @@
-import { Reactive } from "../reactive";
-
-interface DependencyOptions {
-    isStrict: boolean;
-}
+import {Reactive, DependencyOptions} from "../reactive";
 
 export class BooleanReactive extends Reactive<boolean> {
     same(options?: DependencyOptions) {
@@ -22,7 +18,7 @@ export function fromBoolean(value: boolean) {
     return new BooleanReactive(value);
 }
 
-export function from<T>(...reactives: BooleanReactive[]) {
+export function from(...reactives: BooleanReactive[]) {
     const newReactive = new BooleanReactive();
 
     return createDependencyChain(newReactive, reactives);

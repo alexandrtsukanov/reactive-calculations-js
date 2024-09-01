@@ -1,5 +1,3 @@
-// import { createDependencyChain } from "./utils/create-deps";
-
 type DependencyChain<T> = Set<Reactive<T>>;
 
 export interface DependencyOptions {
@@ -147,12 +145,6 @@ export class Reactive<T> {
             throw new Error(`The current dependency method supports dependency of only one item. Now it depends on ${this.closestNonEmptyParents.length} items with values ${this.mapToValues(this.closestNonEmptyParents)}`);
         }
     }
-}
-
-export function from<T>(...reactives: Reactive<T>[]) {
-    const newReactive = new Reactive<T>();
-
-    return createDependencyChain<T>(newReactive, reactives);
 }
 
 export function createDependencyChain<T>(dep: Reactive<T>, parents: Reactive<T>[]) {

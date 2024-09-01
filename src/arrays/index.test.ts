@@ -1,4 +1,4 @@
-const {fromArray, from} = require('../sync.ts');
+import {fromArray, from} from './index.ts';
 
 describe('Массивы', () => {
     describe('Простая зависимость', () => {
