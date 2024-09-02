@@ -1,9 +1,9 @@
-import { from, fromBoolean } from "./index.ts";
+import { fromBool, createBoolean } from "./index.ts";
 
 describe('Логические значения', () => {
-    const a = fromBoolean(true);
-    const b = from(a).same();
-    const c = from(b).opposite();
+    const a = createBoolean(true);
+    const b = fromBool(a).same();
+    const c = fromBool(b).opposite();
 
     test('Инициализация a №1', () => {
         expect(a.getValue()).toBeTruthy();

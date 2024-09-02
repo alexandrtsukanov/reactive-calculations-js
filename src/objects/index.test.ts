@@ -1,9 +1,9 @@
-import { from, fromObject } from "./index.ts";
+import { fromObj, createObject } from "./index.ts";
 
 describe('Объекты', () => {
     describe('Простая зависимость', () => {
-        const a = fromObject({a: 1, b: 2});
-        const b = from(a).depend(val => ({...val, b: val.b + 10}));
+        const a = createObject({a: 1, b: 2});
+        const b = fromObj(a).depend(val => ({...val, b: val.b + 10}));
 
         test('Инициализация а', () => {
             expect(a.getValue()).toEqual({a: 1, b: 2});
@@ -25,8 +25,8 @@ describe('Объекты', () => {
     });
 
     describe('Простая зависимость, меняем все поля', () => {
-        const a = fromObject({a: 1, b: 2});
-        const b = from(a).depend(val => ({
+        const a = createObject({a: 1, b: 2});
+        const b = fromObj(a).depend(val => ({
             ...val, 
             a: val.a + 10, 
             b: val.b + 20,
@@ -83,8 +83,8 @@ describe('Объекты', () => {
     });
 
     describe('Цепочка правила зависимости', () => {
-        const a = fromObject({a: 1, b: 2});
-        const b = from(a)
+        const a = createObject({a: 1, b: 2});
+        const b = fromObj(a)
             .depend(val => ({...val, b: val.b * 2}))
             .depend(val => ({...val, a: val.a * 3}))
             .depend(val => ({...val, 
@@ -108,13 +108,13 @@ describe('Объекты', () => {
     });
 
     describe('Цепочка зависимостей', () => {
-        const a = fromObject({a: 1, b: 2});
-        const b = from(a);
-        const c = from(b).depend(val => ({...val, 
+        const a = createObject({a: 1, b: 2});
+        const b = fromObj(a);
+        const c = fromObj(b).depend(val => ({...val, 
             b: val.b + 2,
             c: 100,
         }));
-        const d = from(c).depend(val => ({...val, 
+        const d = fromObj(c).depend(val => ({...val, 
             a: val.a - 1,
             d: 200,
         }));
@@ -139,8 +139,8 @@ describe('Объекты', () => {
     });
 
     describe('Зависимость через flatMap', () => {
-        const a = fromObject({a: 1, b: 2, c: 3});
-        const b = from(a).flatMap(({a: aVal, c: cVal}) => ({[String(cVal) + String(aVal)]: aVal + cVal}));
+        const a = createObject({a: 1, b: 2, c: 3});
+        const b = fromObj(a).flatMap(({a: aVal, c: cVal}) => ({[String(cVal) + String(aVal)]: aVal + cVal}));
 
         test('Зависимость d от a', () => {
             expect(b.getValue()).toEqual({'31': 4});
@@ -154,8 +154,8 @@ describe('Объекты', () => {
     });
 
     describe('Зависимость через map', () => {
-        const a = fromObject({a: 1, b: 2, c: 3});
-        const b = from(a).map((key, value) => [value, key]);
+        const a = createObject({a: 1, b: 2, c: 3});
+        const b = fromObj(a).map((key, value) => [value, key]);
 
         test('Зависимость b от a', () => {
             expect(b.getValue()).toEqual({'1': 'a', '2': 'b', '3': 'c'});
@@ -169,8 +169,8 @@ describe('Объекты', () => {
     });
 
     describe('Инициализация зависимости в рандомный момент', () => {
-        const a = fromObject({a: 1});
-        const b = fromObject({b: 2});
+        const a = createObject({a: 1});
+        const b = createObject({b: 2});
 
         test('b независима от а', () => {
             a.update({a: 10});

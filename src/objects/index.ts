@@ -36,11 +36,11 @@ class ObjectReactive extends Reactive<Object> {
     }
 }
 
-export function fromObject(value: Object) {
+export function createObject(value: Object) {
     return new ObjectReactive(value);
 }
 
-export function from(...reactives: ObjectReactive[]): ObjectReactive {
+export function fromObj(...reactives: ObjectReactive[]): ObjectReactive {
     const newReactive = new ObjectReactive();
 
     return createDependencyChain(newReactive, reactives);

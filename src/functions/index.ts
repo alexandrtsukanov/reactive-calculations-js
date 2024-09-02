@@ -79,11 +79,11 @@ class FunctionReactive extends Reactive<Function> {
     }
 }
 
-export function fromFunction(value: Function) {
+export function createFunction(value: Function) {
     return new FunctionReactive(value);
 }
 
-export function from(...reactives: FunctionReactive[]): FunctionReactive  {
+export function fromFn(...reactives: FunctionReactive[]): FunctionReactive  {
     if (reactives.length > 1) {
         throw new Error('Dependencies of more than 1 function are not supported')
     }
@@ -92,7 +92,3 @@ export function from(...reactives: FunctionReactive[]): FunctionReactive  {
 
     return createDependencyChain(newReactive, reactives);
 }
-
-const f1 = fromFunction(str => str.length);
-const f2 = from(f1);
-console.log(f2.getValue());

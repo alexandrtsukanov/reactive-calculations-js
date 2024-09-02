@@ -1,9 +1,9 @@
-import { from, fromValue } from "./index.ts";
+import { fromStr, createStr } from "./index.ts";
 
 describe('Строки', () => {
-    const a = fromValue('abc');
-    const b = from(a).depend(val => val + '_postfix');
-    const c = from(b).depend(val => 'prefix_' + val);
+    const a = createStr('abc');
+    const b = fromStr(a).depend(val => val + '_postfix');
+    const c = fromStr(b).depend(val => 'prefix_' + val);
 
     test('Инициализация а', () => {
         expect(a.getValue()).toBe('abc');

@@ -1,10 +1,10 @@
 import {Reactive, createDependencyChain} from '../reactive.ts';
 
-export function fromValue(value: string) {
+export function createStr(value: string) {
     return new Reactive(value);
 }
 
-export function from(...reactives: Reactive<string>[]): Reactive<string> {
+export function fromStr(...reactives: Reactive<string>[]): Reactive<string> {
     const newReactive = new Reactive<string>();
 
     return createDependencyChain(newReactive, reactives);

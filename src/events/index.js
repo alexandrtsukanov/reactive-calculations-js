@@ -1,6 +1,6 @@
 const {fromObject, from} = require('../objects/index');
 
-function fromDOMEvent(emitter, event) {
+function createDOMEvent(emitter, event) {
     const withResolvers = () => {
         let resolve
         let reject
@@ -74,4 +74,4 @@ function fromDOMEvent(emitter, event) {
     }
 }
 
-module.exports = {fromDOMEvent};
+module.exports = {createDOMEvent};

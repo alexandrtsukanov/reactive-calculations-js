@@ -1,4 +1,4 @@
-import {Reactive, DependencyOptions, createDependencyChain} from '../reactive.ts';
+import {Reactive, DependencyOptions, createDependencyChain} from '../reactive';
 
 export type ArrayMethod<T> = (value: T) => T;
 type FlatMapArray<T> = (this: undefined, value: T) => Array<T>;
@@ -59,11 +59,11 @@ class ArrayReactive extends Reactive<Array<any>> {
     }
 }
 
-export function fromArray(value: Array<any>) {
+export function createArray(value: Array<any>) {
     return new ArrayReactive(value);
 }
 
-export function from(...reactives: ArrayReactive[]): ArrayReactive {
+export function fromArr(...reactives: ArrayReactive[]): ArrayReactive {
     const newReactive = new ArrayReactive();
 
     return createDependencyChain(newReactive, reactives);

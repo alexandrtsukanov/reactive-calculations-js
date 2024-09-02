@@ -1,10 +1,10 @@
-import { from, fromFunction } from "./index.ts";
+import { fromFn, createFunction } from "./index.ts";
 
 describe('Функции', () => {
     describe('Простая зависимость', () => {
         const f = (a, b) => a + b;
-        const f1 = fromFunction(f);
-        const f2 = from(f1).depend(val => val + 1);
+        const f1 = createFunction(f);
+        const f2 = fromFn(f1).depend(val => val + 1);
     
         test('Инициализация f1', () => {
             expect(f1.getValue()(10, 5)).toBe(15);
@@ -36,10 +36,10 @@ describe('Функции', () => {
 
     describe('Длинная цепочка зависимостей', () => {
         const f = (a, b) => a + b + 1;
-        const f1 = fromFunction(f);
-        const f2 = from(f1).depend(val => val + 2);
-        const f3 = from(f2).depend(val => val - 10);
-        const f4 = from(f3).depend(val => val * 2);
+        const f1 = createFunction(f);
+        const f2 = fromFn(f1).depend(val => val + 2);
+        const f3 = fromFn(f2).depend(val => val - 10);
+        const f4 = fromFn(f3).depend(val => val * 2);
 
         test('Инициализация f1', () => {
             expect(f1.getValue()(10, 5)).toBe(16);
@@ -83,8 +83,8 @@ describe('Функции', () => {
 
     describe('Цепочка правила зависимости', () => {
         const f = (a, b) => Math.max(a, b);
-        const f1 = fromFunction(f);
-        const f2 = from(f1)
+        const f1 = createFunction(f);
+        const f2 = fromFn(f1)
             .depend(val => val + 1)
             .depend(val => val * 2)
             .depend(val => val.toString())
@@ -103,20 +103,20 @@ describe('Функции', () => {
 
     describe('Зависимость от двух или более функций', () => {
         const average = (a, b, c) => Math.floor((a + b + c) / 3);
-        const f1 = fromFunction(average);
+        const f1 = createFunction(average);
 
         const doubleSum = (a, b) => (a + b) * 2;
-        const f2 = fromFunction(doubleSum);
+        const f2 = createFunction(doubleSum);
 
         test('Зависимость f3 от f1 и(или) f2', () => {
-            expect(() => from(f1, f2).depend((val1, val2) => val1 + val2)).toThrow();
+            expect(() => fromFn(f1, f2).depend((val1, val2) => val1 + val2)).toThrow();
         });
     })
 
     describe('Пустая зависимость', () => {
-        const f1 = fromFunction(str => str.length);
-        const f2 = from(f1);
-        const f3 = from(f2).depend(num => num * 2);
+        const f1 = createFunction(str => str.length);
+        const f2 = fromFn(f1);
+        const f3 = fromFn(f2).depend(num => num * 2);
 
         test('Инициализация f1', () => {
             expect(f1.getValue()('hello!')).toBe(6);
@@ -132,8 +132,8 @@ describe('Функции', () => {
     })
 
     describe('Инициализация зависимости в рандомный момент', () => {
-        const f1 = fromFunction((a, b) => a - b);
-        const f2 = fromFunction((a, b) => a * 2 + b);
+        const f1 = createFunction((a, b) => a - b);
+        const f2 = createFunction((a, b) => a * 2 + b);
 
         test('f2 не зависит от f1', () => {
             expect(f2.getValue()(3, 4)).toBe(10);
@@ -160,8 +160,8 @@ describe('Функции', () => {
 
     describe('Освобождение от зависимостей', () => {
         const doubleSum = (a, b) => (a + b) * 2;
-        const f1 = fromFunction(doubleSum);
-        const f2 = from(f1).depend(val => val + 1);
+        const f1 = createFunction(doubleSum);
+        const f2 = fromFn(f1).depend(val => val + 1);
 
         test('Зависимость f2 от f1', () => {
             expect(f2.getValue()(4, 5)).toBe(19);
@@ -176,8 +176,8 @@ describe('Функции', () => {
     })
 
     describe('Ничего не возвращающая функция', () => {
-        const f1 = fromFunction(() => {});
-        const f2 = from(f1).depend(val => val + 1);
+        const f1 = createFunction(() => {});
+        const f2 = fromFn(f1).depend(val => val + 1);
 
         test('Зависимость f3 от f1 и(или) f2', () => {
             expect(f2.getValue()()).toBeNaN();

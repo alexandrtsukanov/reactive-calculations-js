@@ -58,11 +58,11 @@ class RegExpReactive extends Reactive<RegExp> {
     }
 }
 
-export function fromRegExp(value: RegExp) {
+export function createRegExp(value: RegExp) {
     return new RegExpReactive(value);
 }
 
-export function from(...reactives: RegExpReactive[]): RegExpReactive {
+export function fromRe(...reactives: RegExpReactive[]): RegExpReactive {
     const newReactive = new RegExpReactive();
 
     return createDependencyChain(newReactive, reactives);

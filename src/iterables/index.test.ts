@@ -1,9 +1,9 @@
-import {fromIterable, from} from "./index.ts";
+import {createIterable, fromIter} from "./index.ts";
 
 describe('Iterables', () => {
     describe('Простая зависимость', () => {
-        const a = fromIterable([1, 2, 3]);
-        const b = from(a).map(el => el * 2);
+        const a = createIterable([1, 2, 3]);
+        const b = fromIter(a).map(el => el * 2);
 
         test('Инициализация а', () => {
             const iterator = a.getIterator();
@@ -44,8 +44,8 @@ describe('Iterables', () => {
     })
     
     describe('Цепочка правила зависимости', () => {
-        const a = fromIterable([1, 2, 3, 4, 5]);
-        const b = from(a)
+        const a = createIterable([1, 2, 3, 4, 5]);
+        const b = fromIter(a)
             .map(el => el * 2)
             .filter(el => el > 3)
             .reverse()
@@ -61,9 +61,9 @@ describe('Iterables', () => {
     })
 
     describe('Цепочка зависимостей', () => {
-        const a = fromIterable([1, 2, 3]);
-        const b = from(a).map(el => el * 2)
-        const c = from(b).map(el => el * 5)
+        const a = createIterable([1, 2, 3]);
+        const b = fromIter(a).map(el => el * 2)
+        const c = fromIter(b).map(el => el * 5)
     
         test('Цепочка', () => {
             const iterator = c.getIterator();
@@ -86,8 +86,8 @@ describe('Iterables', () => {
     })
 
     describe('Цепочка', () => {
-        const a = fromIterable([1, 2, 3, 4, 5]);
-        const b = from(a)
+        const a = createIterable([1, 2, 3, 4, 5]);
+        const b = fromIter(a)
             .map(el => el * 2)
             .reverse()
             .map(el => el - 1)
@@ -116,11 +116,11 @@ describe('Iterables', () => {
     })
 
     describe('Цепочка c пустыми зависимостями', () => {
-        const a = fromIterable([1, 2, 3, 4, 5]);
-        const b = from(a);
-        const c = from(b);
-        const d = from(c)
-        const e = from(d).map(el => el * 10);
+        const a = createIterable([1, 2, 3, 4, 5]);
+        const b = fromIter(a);
+        const c = fromIter(b);
+        const d = fromIter(c)
+        const e = fromIter(d).map(el => el * 10);
     
         test('Пустая зависимость b от a', () => {
             const iterator = b.getIterator()?.[Symbol.iterator]()
@@ -140,8 +140,8 @@ describe('Iterables', () => {
     })
 
     describe('Iterable строки', () => {
-        const a = fromIterable('abc');
-        const b = from(a).map(char => char + '!');
+        const a = createIterable('abc');
+        const b = fromIter(a).map(char => char + '!');
     
         test('Зависимость b от a', () => {
             const iterator = b.getIterator()
@@ -163,8 +163,8 @@ describe('Iterables', () => {
     })
 
     describe('Iterable сета', () => {
-        const a = fromIterable(new Set([1, 2, 3]));
-        const b = from(a)
+        const a = createIterable(new Set([1, 2, 3]));
+        const b = fromIter(a)
             .map(el => el + 5)
             .reverse()
 
@@ -188,13 +188,13 @@ describe('Iterables', () => {
     })
 
     describe('Iterable итератора', () => {
-        const a = fromIterable(new Map([
+        const a = createIterable(new Map([
             ['a', 1],
             ['b', 2],
             ['c', 3],
         ]).values());
 
-        const b = from(a).map(el => el + 2)
+        const b = fromIter(a).map(el => el + 2)
 
         test('Зависимость b от a', () => {
             const iterator = b.getIterator()

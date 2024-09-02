@@ -1,9 +1,9 @@
-import {fromValue, from} from './index.ts';
+import {createNum, fromNum} from './index.ts';
 
 describe('Числа', () => {
     describe('Простая зависимость', () => {
-        const a = fromValue(1);
-        const b = from(a).depend(val => val + 5);
+        const a = createNum(1);
+        const b = fromNum(a).depend(val => val + 5);
 
         test('Инициализация а', () => {
             expect(a.getValue()).toBe(1);
@@ -25,11 +25,11 @@ describe('Числа', () => {
     });
 
     describe('Сложная зависимость от двух или более чисел', () => {
-        const a = fromValue(1);
-        const b = fromValue(2);
-        const c = fromValue(3);
-        const d = from(a, b, c).depend((a, b, c) => a + b + c + 2);
-        const e = from(d).depend(d => d * 10);
+        const a = createNum(1);
+        const b = createNum(2);
+        const c = createNum(3);
+        const d = fromNum(a, b, c).depend((a, b, c) => a + b + c + 2);
+        const e = fromNum(d).depend(d => d * 10);
     
         test('Зависимость d от а, b и c', () => {
             expect(d.getValue()).toBe(8);
@@ -61,11 +61,11 @@ describe('Числа', () => {
     });
 
     describe('Длинная цепочка зависимостей', () => {
-        const a = fromValue(2);
-        const b = from(a).depend(val => val + 10);
-        const c = from(b).depend(val => val - 4);
-        const d = from(c).depend(val => val * 2);
-        const e = from(d).depend(val => val * 10);
+        const a = createNum(2);
+        const b = fromNum(a).depend(val => val + 10);
+        const c = fromNum(b).depend(val => val - 4);
+        const d = fromNum(c).depend(val => val * 2);
+        const e = fromNum(d).depend(val => val * 10);
     
         test('Зависимость e от a', () => {
             expect(e.getValue()).toBe(160);
@@ -79,9 +79,9 @@ describe('Числа', () => {
     });
 
     describe('Освобождение от зависимостей', () => {
-        const a = fromValue(3);
-        const b = from(a).depend(val => val * 2);
-        const c = from(b).depend(val => val * 4);
+        const a = createNum(3);
+        const b = fromNum(a).depend(val => val * 2);
+        const c = fromNum(b).depend(val => val * 4);
 
         test('Зависимость b от a', () => {
             expect(b.getValue()).toBe(6);
@@ -109,9 +109,52 @@ describe('Числа', () => {
         });
     });
 
+    describe('Освобождение от зависимостей со стороны зависимого', () => {
+        const a = createNum(3);
+        const b = fromNum(a).depend(val => val * 2);
+        const c = fromNum(b).depend(val => val * 4);
+
+        test('Зависимость b от a', () => {
+            expect(b.getValue()).toBe(6);
+        });
+    
+        test('Зависимость c от a', () => {
+            expect(c.getValue()).toBe(24);
+        });
+      
+        test('Освобождение b от a, b не равно новому значению', () => {
+            b.break(a);
+            a.update(18);
+
+            expect(b.getValue()).not.toBe(36);
+        });
+
+        test('Освобождение b от a, b равно старому значению', () => {
+            expect(b.getValue()).toBe(6);
+        });
+    });
+
+    describe('Освобождение от зависимостей со стороны зависимогоб не ломается', () => {
+        const a = createNum(3);
+        const b = createNum(7);
+        const c = createNum(9);
+
+        test('Не ломается, a b', () => {
+            a.free(b)
+
+            expect(b.getValue()).toBe(7);
+        });
+    
+        test('Не ломается, c b', () => {
+            c.break(b)
+
+            expect(c.getValue()).toBe(9);
+        });
+    });
+
     describe('Инициализация зависимости в рандомный момент', () => {
-        const a = fromValue(1);
-        const b = fromValue(2);
+        const a = createNum(1);
+        const b = createNum(2);
 
         test('b независима от а', () => {
             a.update(3);
@@ -137,12 +180,12 @@ describe('Числа', () => {
     });
 
     describe('Пустая зависимость', () => {
-        const a = fromValue(1);
-        const b = from(a);
+        const a = createNum(1);
+        const b = fromNum(a);
 
-        const c = fromValue(3);
-        const d = fromValue(4);
-        const e = from(c, d);
+        const c = createNum(3);
+        const d = createNum(4);
+        const e = fromNum(c, d);
 
         test('Пустая зависимсость, одно значение', () => {
             expect(b.getValue()).toBeNull();
@@ -152,7 +195,7 @@ describe('Числа', () => {
             expect(e.getValue()).toBeNull();
         });
 
-        const f = from(b).depend(val => val * 2);
+        const f = fromNum(b).depend(val => val * 2);
 
         test('f зависит от b', () => {
             expect(f.getValue()).toBe(2);
@@ -164,7 +207,7 @@ describe('Числа', () => {
             expect(f.getValue()).toBe(22);
         });
         
-        const g = from(e).depend((c, d) => (c + d) * 3);
+        const g = fromNum(e).depend((c, d) => (c + d) * 3);
 
         test('g зависит от e', () => {
             expect(g.getValue()).toBe(21);
@@ -179,13 +222,13 @@ describe('Числа', () => {
     })
 
     describe('Длинная цепочка пустых зависимостей', () => {
-        const a = fromValue(1);
-        const b = fromValue(2);
-        const c = from(a, b);
-        const d = from(c);
-        const e = from(d);
-        const f = from(e)
-        const g = from(f).depend((valA, b) => valA + b + 7);
+        const a = createNum(1);
+        const b = createNum(2);
+        const c = fromNum(a, b);
+        const d = fromNum(c);
+        const e = fromNum(d);
+        const f = fromNum(e)
+        const g = fromNum(f).depend((valA, b) => valA + b + 7);
 
         test('g зависит от a и b', () => {
             expect(g.getValue()).toBe(10);
@@ -200,11 +243,11 @@ describe('Числа', () => {
     })
 
     describe('Комбинации родителей', () => {
-        const a = fromValue(1);
-        const b = fromValue(2);
-        const c = from(a);
-        const d = from(b);
-        const e = from(c, d).depend((a, b) => a + b + 5);
+        const a = createNum(1);
+        const b = createNum(2);
+        const c = fromNum(a);
+        const d = fromNum(b);
+        const e = fromNum(c, d).depend((a, b) => a + b + 5);
 
         test('e зависит от a и b', () => {
             expect(e.getValue()).toBe(8);
@@ -218,14 +261,14 @@ describe('Числа', () => {
         });
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(() => from(c, d).depend((a) => a + 5)).toThrow();
+            expect(() => fromNum(c, d).depend((a) => a + 5)).toThrow();
         })
     })
 
     describe('Нестрогие зависимости', () => {
-        const a = fromValue(1);
-        const b = from(a).depend(val => Math.floor((val + 5) / 2), {isStrict: false});
-        const c = from(a).depend(val => Math.floor((val + 5) / 2));
+        const a = createNum(1);
+        const b = fromNum(a).depend(val => Math.floor((val + 5) / 2), {isStrict: false});
+        const c = fromNum(a).depend(val => Math.floor((val + 5) / 2));
 
         test('Зависимость b от a', () => {
             expect(b.getValue()).toBe(3);
@@ -259,8 +302,8 @@ describe('Числа', () => {
     })
 
     describe('Цепочка правила зависимости', () => {
-        const a = fromValue(10);
-        const b = from(a)
+        const a = createNum(10);
+        const b = fromNum(a)
             .depend(val => val + 5)
             .depend(val => val - 3)
             .depend(val => val * 2)
@@ -277,15 +320,15 @@ describe('Числа', () => {
     })
 
     describe('Адаптация по кол-ву аргументов при установлении зависимости', () => {
-        const a = fromValue(3);
-        const b = fromValue(4);
+        const a = createNum(3);
+        const b = createNum(4);
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(() => from(a, b).depend(val => val + 5)).toThrow();
+            expect(() => fromNum(a, b).depend(val => val + 5)).toThrow();
         });
 
         test('Ошибка при несовпадении количества аргументов и зависимых значений', () => {
-            expect(() => from(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
+            expect(() => fromNum(a, b).depend((val1, val2, val3) => val1 + val2 + val3 + 5)).toThrow();
         });
     });
 })

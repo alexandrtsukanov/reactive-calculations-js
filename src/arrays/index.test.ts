@@ -1,9 +1,9 @@
-import {fromArray, from} from './index.ts';
+import {createArray, fromArr} from './index.ts';
 
 describe('Массивы', () => {
     describe('Простая зависимость', () => {
-        const a = fromArray([1, 2, 3]);
-        const b = from(a).map(el => el * 2);
+        const a = createArray([1, 2, 3]);
+        const b = fromArr(a).map(el => el * 2);
     
         test('Инициализация а', () => {
             expect(a.getValue()).toEqual([1, 2, 3]);
@@ -31,8 +31,8 @@ describe('Массивы', () => {
     })
 
     describe('Цепочка правила зависимости', () => {
-        const a = fromArray([1, 2, 3]);
-        const b = from(a)
+        const a = createArray([1, 2, 3]);
+        const b = fromArr(a)
             .map(el => el * 2)
             .filter(el => el > 3)
             .append(['end'])
@@ -45,10 +45,10 @@ describe('Массивы', () => {
     })
 
     describe('Цепочка зависимости', () => {
-        const a = fromArray([1, 2, 3]);
-        const b = from(a)
-        const c = from(b).map(el => el * 3)
-        const d = from(c).map(el => el + 3)
+        const a = createArray([1, 2, 3]);
+        const b = fromArr(a)
+        const c = fromArr(b).map(el => el * 3)
+        const d = fromArr(c).map(el => el + 3)
 
         test('Зависимость d от a', () => {
             expect(d.getValue()).toEqual([6, 9, 12]);
@@ -56,8 +56,8 @@ describe('Массивы', () => {
     })
 
     describe('Пустой массив', () => {
-        const a = fromArray([1]);
-        const b = from(a).map(el => el * 2);
+        const a = createArray([1]);
+        const b = fromArr(a).map(el => el * 2);
 
         test('Обновление через pop, в результате пустой массив №1', () => {
             a.update(prev => {
@@ -74,8 +74,8 @@ describe('Массивы', () => {
     })
 
     describe('Освобождение от зависимостей', () => {
-        const a = fromArray(['a', 'b', 'c']);
-        const b = from(a).map(el => el + '!');
+        const a = createArray(['a', 'b', 'c']);
+        const b = fromArr(a).map(el => el + '!');
         
         test('Зависимость b от a', () => {
             a.update(['d', 'e']);
@@ -96,9 +96,9 @@ describe('Массивы', () => {
     })
 
     describe('Обычная зависимость через depend', () => {
-        const a = fromArray([1, 2, 3]);
-        const b = from(a).depend(arr => [...arr, 4]);
-        const c = from(a).depend(arr => arr.map(el => el * 2));
+        const a = createArray([1, 2, 3]);
+        const b = fromArr(a).depend(arr => [...arr, 4]);
+        const c = fromArr(a).depend(arr => arr.map(el => el * 2));
 
         test('Зависимость b от a', () => {
             expect(b.getValue()).toEqual([1, 2, 3, 4])
@@ -120,10 +120,10 @@ describe('Массивы', () => {
     })
 
     describe('Сложная зависимость от двух или более массивов', () => {
-        const a = fromArray([1, 2, 3]);
-        const b = fromArray([4, 5, 6]);
+        const a = createArray([1, 2, 3]);
+        const b = createArray([4, 5, 6]);
 
-        const c = from(a, b).depend((a, b) => [...a, ...b]);
+        const c = fromArr(a, b).depend((a, b) => [...a, ...b]);
 
         test('Зависимость b от a', () => {
             expect(c.getValue()).toEqual([1, 2, 3, 4, 5, 6])

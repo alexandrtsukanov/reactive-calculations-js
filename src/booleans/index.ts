@@ -14,11 +14,11 @@ export class BooleanReactive extends Reactive<boolean> {
     }
 }
 
-export function fromBoolean(value: boolean) {
+export function createBoolean(value: boolean) {
     return new BooleanReactive(value);
 }
 
-export function from(...reactives: BooleanReactive[]): BooleanReactive {
+export function fromBool(...reactives: BooleanReactive[]): BooleanReactive {
     const newReactive = new BooleanReactive();
 
     return createDependencyChain(newReactive, reactives);

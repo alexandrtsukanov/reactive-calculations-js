@@ -81,11 +81,11 @@ export class AsyncReactive extends Reactive<Promise<any>> {
     }
 }
 
-export function fromAsync(value: Promise<any>) {
+export function createPromise(value: Promise<any>) {
     return new AsyncReactive(value);
 }
 
-export function from(...reactives: AsyncReactive[]): AsyncReactive {
+export function fromProm(...reactives: AsyncReactive[]): AsyncReactive {
     const newReactive = new AsyncReactive();
 
     return createDependencyChain(newReactive, reactives);
@@ -95,11 +95,11 @@ const promise1 = new Promise((res) => {
     setTimeout(() => res(1), 1000)
 })
 
-const p1 = fromAsync(promise1);
-const p2 = from(p1).depend(val => val + 1)
-const p3 = from(p2).depend(val => val + 2)
-const p4 = from(p3).depend(val => val * 3)
-const p5 = from(p4).depend(val => val.toString());
+const p1 = createPromise(promise1);
+const p2 = fromProm(p1).depend(val => val + 1)
+const p3 = fromProm(p2).depend(val => val + 2)
+const p4 = fromProm(p3).depend(val => val * 3)
+const p5 = fromProm(p4).depend(val => val.toString());
 
 p1.updateAsync(Promise.resolve(4))
     .then(() => {
