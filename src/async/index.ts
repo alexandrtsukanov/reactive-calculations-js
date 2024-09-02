@@ -8,7 +8,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
         }
 
         return this.value
-            .then(() => {
+            .then(async () => {
                 this.value = newValue;
 
                 const queue = Array.from(this.getDeps())
@@ -22,7 +22,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
                         const arrayOfParents = reactive.closestNonEmptyParents as AsyncReactive[];
                         console.log('rules outer =>', rules);
                         
-                        reactive.updateDepAsync(rules, arrayOfParents)
+                        await reactive.updateDepAsync(rules, arrayOfParents)
                     }
     
                     const dependencies = reactive.getDeps();
@@ -42,17 +42,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
             .then(values => {
                 this.value = pipe(callbacks)(...values);
             })
-
-            // .catch(reason => reason)
-            // this.value
-            //     ?.then(() => {
-            //         console.log('values', this.value, values);
-                    
-            //         console.log('pipe(callbacks)(...values) =>', pipe(callbacks)(...values), callbacks[0](values[0]));
-
-            //         console.log('Finally value =>', this.value);
-            //     })
-                .catch(reason => this.value = reason)
+            .catch(reason => this.value = reason)
     }
     
     depend(callback: (...args: any[]) => any, options?: DependencyOptions) {
@@ -106,17 +96,24 @@ const promise1 = new Promise((res) => {
 })
 
 const p1 = fromAsync(promise1);
-const p2 = from(p1).depend(val => val + 5);
+const p2 = from(p1).depend(val => val + 1)
+const p3 = from(p2).depend(val => val + 2)
+const p4 = from(p3).depend(val => val * 3)
+const p5 = from(p4).depend(val => val.toString());
 
-console.log(p1.getDeps());
-
-
-p1.getValue()?.then(val => console.log(1, val)) // 1
-p2.getValue()?.then(val => console.log(2, val)) // 6
-p1.updateAsync(Promise.resolve(2))
+p1.updateAsync(Promise.resolve(4))
     .then(() => {
-        p1.getValue()?.then(val => console.log(3, val)) // 2
+        p1.getValue()?.then(val => console.log(2, val)) // 2
     })
     .then(() => {
-        console.log(4, p2.getValue()); // 7
+        console.log(3, p2.getValue()) // 2
     })
+    .then(() => {
+        console.log(4, p3.getValue()) // 2
+    })
+    .then(() => {
+        console.log(1, p5.getValue()) // 1
+    })
+    // .then(() => {
+    //     console.log(4, p5.getValue()); // 7
+    // })

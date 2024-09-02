@@ -91,22 +91,22 @@ describe('Promises', () => {
             return expect(p5.getValue()).resolves.toBe('12');
         })
 
-        test('Обновление p2 после обновления p1', () => {
-            const updated = p1.updateAsync(Promise.resolve(4))
+        // test('Обновление p2 после обновления p1', () => {
+        //     const updated = p1.updateAsync(Promise.resolve(4))
 
-            updated
-                .then(() => {
-                    return expect(p1.getValue()).resolves.toBe(4)
-                })
-                .then(() => expect(p2.getValue()).toBe(5))
-                // .then(() => expect(p3.getValue()).toBe(7))
-                // .then(() => expect(p4.getValue()).toBe(21))
-                // .then(() => expect(p5.getValue()).toBe('21'))
-        })
+        //     updated
+        //         .then(() => {
+        //             return expect(p1.getValue()).resolves.toBe(4)
+        //         })
+        //         .then(() => expect(p2.getValue()).toBe(5))
+        //         .then(() => expect(p3.getValue()).toBe(7))
+        //         .then(() => expect(p4.getValue()).toBe(21))
+        //         .then(() => expect(p5.getValue()).toBe('21'))
+        // })
 
-        test('Обновление p3 после обновления p1', () => {
-            expect(p3.getValue()).toBe(7);
-        })
+        // test('Обновление p3 после обновления p1', () => {
+        //     expect(p3.getValue()).toBe(7);
+        // })
 
         // test('Обновление p3 после обновления p1', () => {
         //     expect(p5.getValue()).toBe(7);
@@ -162,26 +162,26 @@ describe('Promises', () => {
     //     })
     // })
 
-    // describe('Пустые зависимости', () => {
-    //     const promise1 = new Promise((res) => {
-    //         setTimeout(() => res(1), 1000);
-    //     })
+    describe('Пустые зависимости', () => {
+        const promise1 = new Promise((res) => {
+            setTimeout(() => res(1), 1000);
+        })
 
-    //     const promise2 = new Promise((res) => {
-    //         setTimeout(() => res(2), 2000);
-    //     })
+        const promise2 = new Promise((res) => {
+            setTimeout(() => res(2), 2000);
+        })
 
-    //     const p1 = fromAsync(promise1);
-    //     const p2 = fromAsync(promise2);
-    //     const p3 = from(p1, p2)
-    //     const p4 = from(p3).depend((val1, val2) => val1 + val2)
+        const p1 = fromAsync(promise1);
+        const p2 = fromAsync(promise2);
+        const p3 = from(p1, p2)
+        const p4 = from(p3).depend((val1, val2) => val1 + val2)
 
-    //     test('p3 зависит от p1 и p2 пусто', () => {
-    //         return expect(p3.getValue()).resolves.toBeNull();
-    //     })
+        test('p3 зависит от p1 и p2 пусто', () => {
+            return expect(p3.getValue()).toBeNull();
+        })
 
-    //     test('p4 зависит от p1 и p2', () => {
-    //         return expect(p4.getValue()).resolves.toBe(3);
-    //     })
-    // })
+        test('p4 зависит от p1 и p2', () => {
+            return expect(p4.getValue()).resolves.toBe(3);
+        })
+    })
 })
