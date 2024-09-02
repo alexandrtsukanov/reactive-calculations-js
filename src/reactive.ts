@@ -45,7 +45,7 @@ export class Reactive<T> {
     }
 
     private updateDeps() {
-        const queue: Reactive<T>[] = Array.from(this.deps)
+        const queue: Reactive<T>[] = Array.from(this.deps);
         let cursor = 0;
 
         while (cursor < queue.length) {

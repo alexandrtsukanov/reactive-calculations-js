@@ -2,7 +2,7 @@
   "name": "reactive-calculations-js",
   "version": "1.0.0",
   "description": "READ.ME",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "test": "jest"
   },

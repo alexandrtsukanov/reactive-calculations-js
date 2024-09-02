@@ -1,4 +1,4 @@
-const {fromObject, from} = require('../objects/index');
+const {createObject, fromObj} = require('../objects/index');
 
 function createDOMEvent(emitter, event) {
     const withResolvers = () => {
@@ -58,17 +58,17 @@ function createDOMEvent(emitter, event) {
     return {
         flatMap: async function*(callback) {
             for await (const e of on(emitter, event)) {
-                const event = fromObject(e)
+                const event = createObject(e)
 
-                return from(event).flatMap(callback);
+                yield fromObj(event).flatMap(callback);
             }
         },
 
         map: async function*(callback) {
             for await (const e of on(emitter, event)) {
-                const event = fromObject(e)
+                const event = createObject(e)
 
-                return from(event).map(callback);
+                yield fromObj(event).map(callback);
             }
         },
     }

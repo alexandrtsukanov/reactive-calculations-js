@@ -90,6 +90,40 @@ describe('Promises', () => {
         test('p5 зависит от p1', () => {
             return expect(p5.getValue()).resolves.toBe('12');
         })
+
+        test('Обновление p1, исключение', () => {
+            expect(() => p1.updateAsync(Promise.resolve(4))).toThrow();
+        })
+    })
+
+    describe('Цепочка правила зависимости', () => {
+        const promise1 = new Promise((res) => {
+            setTimeout(() => res('abc'), 1000);
+        })
+
+        const p1 = createPromise(promise1);
+        const p2 = fromProm(p1)
+            .depend(val => val + 'd')
+            .depend(val => val + 'e')
+            .depend(val => 'prefix_' + val)
+            .depend(val => val.split('_'))
+
+        test('p2 зависит от p1', () => {
+            return expect(p2.getValue()).resolves.toEqual(['prefix', 'abcde']);
+        })
+
+        test('Обновление p2 после обновления p1', () => {
+            const updated = p1.updateAsync(Promise.resolve('xyz'));
+
+            updated
+                .then(() => {
+                    return expect(p1.getValue()).resolves.toBe('xyz')
+                })
+        })
+
+        test('p2 зависит от p1', () => {
+            expect(p2.getValue()).toEqual(['prefix', 'xyzde']);
+        })
     })
 
     describe('Пустые зависимости', () => {

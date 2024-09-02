@@ -7,6 +7,8 @@ export class AsyncReactive extends Reactive<Promise<any>> {
             return Promise.reject();
         }
 
+        this.checkChainLength(this);
+
         return this.value
             .then(async () => {
                 this.value = newValue;
@@ -20,8 +22,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
     
                     if (!reactive.isEmptyDep()) {
                         const arrayOfParents = reactive.closestNonEmptyParents as AsyncReactive[];
-                        console.log('rules outer =>', rules);
-                        
+                                                
                         await reactive.updateDepAsync(rules, arrayOfParents)
                     }
     
@@ -37,7 +38,7 @@ export class AsyncReactive extends Reactive<Promise<any>> {
             .catch(reason => this.update(reason))
     }
 
-    updateDepAsync(callbacks: ((...args: any[]) => any)[], parents: AsyncReactive[]) {
+    private updateDepAsync(callbacks: ((...args: any[]) => any)[], parents: AsyncReactive[]) {
         Promise.all([...this.mapToValues(parents)])
             .then(values => {
                 this.value = pipe(callbacks)(...values);
@@ -66,18 +67,28 @@ export class AsyncReactive extends Reactive<Promise<any>> {
 
             this.value = parents
                 .then(values => {
-                    return callback(...values);
+                    return pipe(this.rules)(...values)
                 })
                 .catch(reason => reason)
         } else {
             this.value
                 .then(value => {
-                    return callback(value);
+                    return pipe(this.rules)(value);
                 })
                 .catch(reason => reason)
         }
 
         return this;
+    }
+
+    private checkChainLength(current: AsyncReactive) {
+        if (
+            current.getDeps().size > 0 &&
+            Array.from(current.getDeps())
+                .some(dep => dep.getDeps().size > 0)
+        ) {
+            throw new Error('Updating promises in chain consisting of more than 2 promises is not supported');
+        }
     }
 }
 
@@ -90,30 +101,3 @@ export function fromProm(...reactives: AsyncReactive[]): AsyncReactive {
 
     return createDependencyChain(newReactive, reactives);
 }
-
-const promise1 = new Promise((res) => {
-    setTimeout(() => res(1), 1000)
-})
-
-const p1 = createPromise(promise1);
-const p2 = fromProm(p1).depend(val => val + 1)
-const p3 = fromProm(p2).depend(val => val + 2)
-const p4 = fromProm(p3).depend(val => val * 3)
-const p5 = fromProm(p4).depend(val => val.toString());
-
-p1.updateAsync(Promise.resolve(4))
-    .then(() => {
-        p1.getValue()?.then(val => console.log(2, val)) // 2
-    })
-    .then(() => {
-        console.log(3, p2.getValue()) // 2
-    })
-    .then(() => {
-        console.log(4, p3.getValue()) // 2
-    })
-    .then(() => {
-        console.log(1, p5.getValue()) // 1
-    })
-    // .then(() => {
-    //     console.log(4, p5.getValue()); // 7
-    // })
