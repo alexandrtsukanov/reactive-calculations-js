@@ -38,7 +38,7 @@ var Reactive = /** @class */ (function () {
         //     this.value = newValue(this.value)
         // } else {
         // }
-        // this.updateDeps();
+        this.updateDeps();
     };
     Reactive.prototype.updateDeps = function () {
         var queue = Array.from(this.deps);

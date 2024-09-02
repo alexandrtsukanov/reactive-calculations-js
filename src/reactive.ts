@@ -35,15 +35,13 @@ export class Reactive<T> {
             return;
         }
 
-        // @ts-ignore
-        this.value = newValue;
+        if (newValue instanceof Function) {
+            this.value = newValue(this.value)
+        } else {
+            this.value = newValue;
+        }
 
-        // if (newValue instanceof Function) {
-        //     this.value = newValue(this.value)
-        // } else {
-        // }
-
-        // this.updateDeps();
+        this.updateDeps();
     }
 
     private updateDeps() {
@@ -69,7 +67,7 @@ export class Reactive<T> {
         }
     }
  
-    updateDep(callbacks: ((...args: (T)[]) => T)[], ...parents: Reactive<T>[]) {
+    updateDep(callbacks: ((...args: T[]) => T)[], ...parents: Reactive<T>[]) {
         this.value = pipe(callbacks)(...this.mapToValues(parents));
     }
 
