@@ -4,7 +4,7 @@ interface Object {
     [key: string]: any  
 }
 
-type MapObject<T> = (key: string | Symbol, value: T) => [string, T];
+type MapObject<T> = (key: string, value: T) => [string, T];
 type FlatMapObject = (obj: Object) => Object;
 
 class ObjectReactive extends Reactive<Object> {
@@ -45,3 +45,9 @@ export function fromObj(...reactives: ObjectReactive[]): ObjectReactive {
 
     return createDependencyChain(newReactive, reactives);
 }
+
+const obj = createObject({a: 1, b: 2});
+
+const copy = fromObj(obj).map((k, v) => [k, v + 1])
+
+copy.getValue()

@@ -60,7 +60,7 @@ function createDOMEvent(emitter, event) {
             for await (const e of on(emitter, event)) {
                 const event = createObject(e)
 
-                yield fromObj(event).flatMap(callback);
+                yield fromObj(event).flatMap(callback).getValue();
             }
         },
 
@@ -68,7 +68,17 @@ function createDOMEvent(emitter, event) {
             for await (const e of on(emitter, event)) {
                 const event = createObject(e)
 
-                yield fromObj(event).map(callback);
+                yield fromObj(event).map(callback).getValue();
+            }
+        },
+
+        // pred: (Object) => boolean;
+        // val => val.clientX > 250
+        filter: async function*(pred) { 
+            for await (const e of on(emitter, event)) {
+                if (pred(e)) {
+                    yield createObject(e).getValue();
+                }
             }
         },
     }
