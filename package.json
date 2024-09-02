@@ -4,7 +4,8 @@
   "description": "READ.ME",
   "main": "index.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "homepage": "https://github.com/alexandrtsukanov/kobeza-core-course-work#readme",
   "devDependencies": {
     "@types/jest": "^29.5.12",
+    "husky": "^9.1.5",
     "jest": "29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
