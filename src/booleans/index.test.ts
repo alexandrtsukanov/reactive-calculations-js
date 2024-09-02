@@ -1,65 +1,75 @@
-describe('Логические значения', () => {
-    const truthy = fromBoolean(true);
-    const truthy2 = from(truthy).same();
-    const falsy = from(truthy2).opposite();
+import { fromBool, createBoolean } from "./index.ts";
 
-    test('Инициализация truthy №1', () => {
+describe('Логические значения', () => {
+    const a = createBoolean(true);
+    const b = fromBool(a).same();
+    const c = fromBool(b).opposite();
+
+    test('Инициализация a №1', () => {
         expect(a.getValue()).toBeTruthy();
     });
 
-    test('Инициализация truthy №2', () => {
+    test('Инициализация a №2', () => {
         expect(a.getValue()).toBe(true);
     });
 
-    test('truthy2 зависит от truthy прямо №1', () => {
-        expect(truthy2.getValue()).toBeTruthy()
+    test('b зависит от a прямо №1', () => {
+        expect(b.getValue()).toBeTruthy()
     })
 
-    test('truthy2 зависит от truthy прямо №2', () => {
-        expect(truthy2.getValue()).toBe(true)
+    test('b зависит от a прямо №2', () => {
+        expect(b.getValue()).toBe(true)
     })
 
-    test('falsy зависит от truthy2 обратно №1', () => {
-        expect(falsy.getValue()).toBeFalsy()
+    test('c зависит от b обратно №1', () => {
+        expect(c.getValue()).toBeFalsy()
     })
 
-    test('falsy зависит от truthy2 обратно №2', () => {
-        expect(falsy.getValue()).toBe(false);
+    test('c зависит от b обратно №2', () => {
+        expect(c.getValue()).toBe(false);
     })
 
-    truthy.toggle();
+    test('Обновление a №1', () => {
+        a.toggle();
 
-    test('Обновление truthy2 после обновления truthy №1', () => {
-        expect(truthy2.getValue()).toBeFalsy()
+        expect(a.getValue()).toBeFalsy()
     })
 
-    test('Обновление truthy2 после обновления truthy №2', () => {
-        expect(truthy2.getValue()).toBe(false)
+    test('Обновление a №2', () => {
+        expect(a.getValue()).toBe(false)
     })
 
-    test('Обновление falsy после обновления truthy №1', () => {
-        expect(truthy2.getValue()).toBeTruthy()
+    test('Обновление b после обновления a №1', () => {
+        expect(b.getValue()).toBeFalsy()
     })
 
-    test('Обновление falsy после обновления truthy №2', () => {
-        expect(truthy2.getValue()).toBe(true)
+    test('Обновление b после обновления a №2', () => {
+        expect(b.getValue()).toBe(false)
     })
 
-    truthy.update(val => !val);
-
-    test('Зависимость truthy2 от truthy, поддержка обычного update №1', () => {
-        expect(truthy2.getValue()).toBeTruthy()
+    test('Обновление c после обновления a №1', () => {
+        expect(c.getValue()).toBeTruthy()
     })
 
-    test('Зависимость truthy2 от truthy, поддержка обычного update №2', () => {
-        expect(truthy2.getValue()).toBe(true)
+    test('Обновление c после обновления a №2', () => {
+        expect(c.getValue()).toBe(true)
     })
 
-    test('Зависимость falsy от truthy, поддержка обычного update №1', () => {
-        expect(falsy.getValue()).toBeFalsy()
+    test('Зависимость b от a, поддержка обычного update №1', () => {
+        a.update(val => !val);
+
+        expect(b.getValue()).toBeTruthy()
     })
 
-    test('Зависимость falsy от truthy, поддержка обычного update №2', () => {
-        expect(falsy.getValue()).toBe(false);
+    test('Зависимость b от a, поддержка обычного update №2', () => {
+        expect(b.getValue()).toBe(true)
+    })
+
+    test('Зависимость c от a, поддержка обычного update №1', () => {
+        expect(c.getValue()).toBeFalsy()
+    })
+
+    test('Зависимость c от a, поддержка обычного update №2', () => {
+        expect(c.getValue()).toBe(false);
     })
 })

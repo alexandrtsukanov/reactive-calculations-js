@@ -1,3 +1,3 @@
 # reactive-calculations-js
 
-READ.ME
+Библиотека для реактивных вычислений
