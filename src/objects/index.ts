@@ -45,9 +45,3 @@ export function fromObj(...reactives: ObjectReactive[]): ObjectReactive {
 
     return createDependencyChain(newReactive, reactives);
 }
-
-const obj = createObject({a: 1, b: 2});
-
-const copy = fromObj(obj).map((k, v) => [k, v + 1])
-
-copy.getValue()
