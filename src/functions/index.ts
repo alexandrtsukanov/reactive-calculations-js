@@ -1,7 +1,14 @@
 import {Reactive, createDependencyChain, DependencyOptions} from "../reactive";
-import { pipe } from "../utils/pipe";
+import {pipe} from "../utils/pipe";
 
 class FunctionReactive extends Reactive<Function> {
+    rules: ((...args: any[]) => any)[];
+
+    constructor(value: Function | null = null) {
+        super(value);
+        this.rules = [];
+    }
+
     getValue() {
         return this.value ?? (() => {});
     }
@@ -23,15 +30,17 @@ class FunctionReactive extends Reactive<Function> {
     private updateDepsFns() {
         const queue = Array.from(this.getDeps());
         let cursor = 0;
+        const allRules: ((...args: any[]) => any)[] = [];
 
         while (cursor < queue.length) {
             const reactive = queue[cursor] as FunctionReactive;
             const {rules} = reactive;
+            allRules.push(...rules);
 
             if (!reactive.isEmptyDep()) {
                 reactive.updateDepFn(
-                    this.value ??  (() => {}),
-                    rules
+                    this.value ?? (() => {}),
+                    allRules,
                 );
             }
 
@@ -66,7 +75,7 @@ class FunctionReactive extends Reactive<Function> {
         this.rules.push(callback);
         this.value = pipe([...this.mapToValues(this.closestNonEmptyParents), ...this.rules]);
 
-        return this;        
+        return this;
     }
 }
 
@@ -75,21 +84,15 @@ export function fromFunction(value: Function) {
 }
 
 export function from(...reactives: FunctionReactive[]): FunctionReactive  {
+    if (reactives.length > 1) {
+        throw new Error('Dependencies of more than 1 function are not supported')
+    }
+
     const newReactive = new FunctionReactive();
 
     return createDependencyChain(newReactive, reactives);
 }
 
-const f = (a, b) => a + b;
-const f1 = fromFunction(f);
-const f2 = from(f1).depend(val => val + 1);
-
-console.log(f1.getValue()(10, 5));
-console.log(f2.getValue()(10, 5));
-console.log(f2.getValue()(20, 10));
-
-const fNew = (a, b) => a * b;
-f1.update(fNew);
-
-console.log(f1.getValue()(10, 5));
-console.log(f2.getValue()(10, 5));
+const f1 = fromFunction(str => str.length);
+const f2 = from(f1);
+console.log(f2.getValue());

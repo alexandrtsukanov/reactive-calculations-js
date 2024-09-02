@@ -32,12 +32,12 @@ var Reactive = /** @class */ (function () {
         if (this.isDependent() && this.isStrict) {
             return;
         }
-        // @ts-ignore
-        this.value = newValue;
-        // if (newValue instanceof Function) {
-        //     this.value = newValue(this.value)
-        // } else {
-        // }
+        if (newValue instanceof Function) {
+            this.value = newValue(this.value);
+        }
+        else {
+            this.value = newValue;
+        }
         this.updateDeps();
     };
     Reactive.prototype.updateDeps = function () {

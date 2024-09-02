@@ -4,7 +4,7 @@
   "description": "READ.ME",
   "main": "index.js",
   "scripts": {
-    "test": "jest src/functions/index.test.ts"
+    "test": "jest"
   },
   "repository": {
     "type": "git",

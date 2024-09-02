@@ -42,7 +42,7 @@ describe('Функции', () => {
         const f4 = from(f3).depend(val => val * 2);
 
         test('Инициализация f1', () => {
-            expect(f1.getValue()(1, 2)).toBe(4);
+            expect(f1.getValue()(10, 5)).toBe(16);
         })
     
         test('Зависимость f2 от f1', () => {
@@ -50,11 +50,11 @@ describe('Функции', () => {
         })
 
         test('Зависимость f3 от f2', () => {
-            expect(f3.getValue()(5, 6)).toBe(4);
+            expect(f3.getValue()(10, 5)).toBe(8);
         })
 
         test('Зависимость f4 от f3', () => {
-            expect(f4.getValue()(7, 8)).toBe(16);
+            expect(f4.getValue()(10, 5)).toBe(16);
         })
     
         test('Зависимость f4 от f3 с другими аргументами', () => {
@@ -68,90 +68,119 @@ describe('Функции', () => {
             expect(f1.getValue()(2, 4)).toBe(10);
         });
     
-        test('Обновление f4 после обновления f1', () => {
-            expect(f4.getValue()(9, 10)).toBe(168);
+        test('Обновление f2 после обновления f1', () => {
+            expect(f2.getValue()(2, 4)).toBe(12);
         })
-    // })
 
-    // describe('Цепочка правила зависимости', () => {
-    //     const f = (a, b) => Math.max(a, b);
-    //     const f1 = fromFunction(f);
-    //     const f2 = from(f1)
-    //         .depend(val => val + 1)
-    //         .depend(val => val * 2)
-    //         .depend(val => val.toString())
+        test('Обновление f3 после обновления f1', () => {
+            expect(f3.getValue()(2, 4)).toBe(2);
+        })
 
-    //     test('Зависимость f2 от f1', () => {
-    //         expect(f2.getValue()(3, 4)).toBeInstanceOf(String);
-    //     });
+        test('Обновление f4 после обновления f1', () => {
+            expect(f4.getValue()(2, 4)).toBe(4);
+        })
+    })
 
-    //     test('Зависимость f2 от f1', () => {
-    //         expect(f2.getValue()(3, 4)).toBe('10');
-    //     });
+    describe('Цепочка правила зависимости', () => {
+        const f = (a, b) => Math.max(a, b);
+        const f1 = fromFunction(f);
+        const f2 = from(f1)
+            .depend(val => val + 1)
+            .depend(val => val * 2)
+            .depend(val => val.toString())
 
-    //     const fNew = (a, b) => Math.min(a, b);
-    //     f1.update(fNew);
-
-    //     test('Обновление f2 после обновления f1', () => {
-    //         expect(f2.getValue()(3, 4)).toBe('8');
-    //     })
-    // })
-
-    // describe('Сложная зависимость от двух или более функций', () => {
-    //     const average = (a, b, c) => Math.floor((a + b + c) / 3);
-    //     const f1 = fromFunction(average);
-
-    //     const doubleSum = (a, b) => (a + b) * 2;
-    //     const f2 = fromFunction(doubleSum);
-
-    //     const f3 = from(f1, f2).depend((val1, val2) => val1 + val2);
-
-    //     test('Зависимость f3 от f1 и(или) f2', () => {
-    //         expect(f3.getValue()(1, 2, 3, 4, 5)).toBe(20);
-    //     });
-
-    //     test('Зависимость f3 от f1 и(или) f2, мало аргументов', () => {
-    //         expect(f3.getValue()(1, 2, 3, 4)).toThrow();
-    //     });
-
-    //     test('Зависимость f3 от f1 и(или) f2, много аргументов', () => {
-    //         expect(f3.getValue()(1, 2, 3, 4, 5, 6)).toBe(20);
-    //     });
-
-    //     const averageInc = (a, b, c) => average(a, b, c) + 1
-    //     f1.update(averageInc);
-    //     const doubleSumInc = (a, b) => doubleSum(a, b) + 1
-    //     f2.update(doubleSumInc);
-
-    //     test('Обновление f3 после обновления f1 и f2', () => {
-    //         expect(f3.getValue()(1, 2, 3, 4, 5)).toBe(22);
-    //     });
-    // })
-
-    // describe('Пустая зависимость', () => {
-    //     const f1 = fromFunction(str => str.length);
-    //     const f2 = from(f1);
-    //     const f3 = from(f2).depend(num => num * 2);
-
-    //     test('Инициализация f1', () => {
-    //         expect(f1.getValue()('hello!')).toBe(6);
-    //     });
-
-    //     test('Зависимость f2 от f1', () => {
-    //         expect(f2.getValue()).toBeUndefined();
-    //     });
+        test('Зависимость f2 от f1', () => {
+            expect(f2.getValue()(3, 4)).toBe('10');
+        });
         
-    //     test('Зависимость f2 от f1 с другими аргументами', () => {
-    //         expect(f3.getValue()('hello!')).toBe(12);
-    //     });
-    // })
+        test('Обновление f2 после обновления f1', () => {
+            const fNew = (a, b) => Math.min(a, b);
+            f1.update(fNew);
 
-    // describe('Ничего не возвращающая функция', () => {
-    //     const f1 = fromFunction(() => {});
-    //     const f2 = from(f1).depend(val => val + 1);
+            expect(f2.getValue()(3, 4)).toBe('8');
+        })
+    })
 
-    //     test('Зависимость f3 от f1 и(или) f2', () => {
-    //         expect(f2.getValue()()).toBeNaN();
-    //     });
+    describe('Зависимость от двух или более функций', () => {
+        const average = (a, b, c) => Math.floor((a + b + c) / 3);
+        const f1 = fromFunction(average);
+
+        const doubleSum = (a, b) => (a + b) * 2;
+        const f2 = fromFunction(doubleSum);
+
+        test('Зависимость f3 от f1 и(или) f2', () => {
+            expect(() => from(f1, f2).depend((val1, val2) => val1 + val2)).toThrow();
+        });
+    })
+
+    describe('Пустая зависимость', () => {
+        const f1 = fromFunction(str => str.length);
+        const f2 = from(f1);
+        const f3 = from(f2).depend(num => num * 2);
+
+        test('Инициализация f1', () => {
+            expect(f1.getValue()('hello!')).toBe(6);
+        });
+
+        test('Зависимость f2 от f1, пустая функция', () => {
+            expect(f2.getValue()()).toBeUndefined()
+        });
+        
+        test('Зависимость f3 от f1', () => {
+            expect(f3.getValue()('hello!')).toBe(12);
+        });
+    })
+
+    describe('Инициализация зависимости в рандомный момент', () => {
+        const f1 = fromFunction((a, b) => a - b);
+        const f2 = fromFunction((a, b) => a * 2 + b);
+
+        test('f2 не зависит от f1', () => {
+            expect(f2.getValue()(3, 4)).toBe(10);
+        });
+
+        test('f2 не зависит от f1', () => {
+            f1.update((a, b) => a - b + 1);
+
+            expect(f2.getValue()(3, 4)).toBe(10);
+        });
+
+        test('f2 зависит от f1', () => {
+            f2.dependsOn(f1).depend(val => val.toString())
+
+            expect(f2.getValue()(3, 4)).toBe('0');
+        });
+
+        test('Обновление f2 после обновления f1', () => {
+            f1.update((a, b) => a - b + 2)
+
+            expect(f2.getValue()(3, 4)).toBe('1');
+        });
+    })
+
+    describe('Освобождение от зависимостей', () => {
+        const doubleSum = (a, b) => (a + b) * 2;
+        const f1 = fromFunction(doubleSum);
+        const f2 = from(f1).depend(val => val + 1);
+
+        test('Зависимость f2 от f1', () => {
+            expect(f2.getValue()(4, 5)).toBe(19);
+        });
+
+        test('Зависимость f2 от f1', () => {
+            f1.free(f2);
+            f1.update( (a, b) => (a + b) * 3);
+
+            expect(f2.getValue()(4, 5)).toBe(19);
+        });
+    })
+
+    describe('Ничего не возвращающая функция', () => {
+        const f1 = fromFunction(() => {});
+        const f2 = from(f1).depend(val => val + 1);
+
+        test('Зависимость f3 от f1 и(или) f2', () => {
+            expect(f2.getValue()()).toBeNaN();
+        });
     })
 })
