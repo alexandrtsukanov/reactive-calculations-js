@@ -2,15 +2,8 @@ import { ArrayMethod } from "../arrays";
 import { DependencyOptions, Reactive, createDependencyChain } from "../reactive";
 
 class IterableReactive extends Reactive<Iterable<any>> {
-    iterator: Iterator<any> | undefined;
-
-    constructor(value: Iterable<any> | null = null) {
-        super(value);
-        this.iterator = value?.[Symbol.iterator]();
-    }
-
     getIterator() {
-        return this.iterator;
+        return (this.value ?? [])[Symbol.iterator]();
     }
 
     map(callback: ArrayMethod<any>, options?: DependencyOptions) {
