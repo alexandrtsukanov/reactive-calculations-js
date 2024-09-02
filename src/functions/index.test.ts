@@ -32,45 +32,45 @@ describe('Функции', () => {
         test('Обновление f2 после обновления f1 с другими аргументами', () => {
             expect(f2.getValue()(20, 10)).toBe(201);
         })
-    // })
+    })
 
-    // describe('Длинная цепочка зависимостей', () => {
-    //     const f = (a, b) => a + b + 1;
-    //     const f1 = fromFunction(f);
-    //     const f2 = from(f1).depend(val => val + 2);
-    //     const f3 = from(f2).depend(val => val - 10);
-    //     const f4 = from(f3).depend(val => val * 2);
+    describe('Длинная цепочка зависимостей', () => {
+        const f = (a, b) => a + b + 1;
+        const f1 = fromFunction(f);
+        const f2 = from(f1).depend(val => val + 2);
+        const f3 = from(f2).depend(val => val - 10);
+        const f4 = from(f3).depend(val => val * 2);
 
-    //     test('Инициализация f1', () => {
-    //         expect(f1.getValue()(1, 2)).toBe(4);
-    //     })
+        test('Инициализация f1', () => {
+            expect(f1.getValue()(1, 2)).toBe(4);
+        })
     
-    //     test('Зависимость f2 от f1', () => {
-    //         expect(f2.getValue()(10, 5)).toBe(18);
-    //     })
+        test('Зависимость f2 от f1', () => {
+            expect(f2.getValue()(10, 5)).toBe(18);
+        })
 
-    //     test('Зависимость f3 от f2', () => {
-    //         expect(f3.getValue()(5, 6)).toBe(4);
-    //     })
+        test('Зависимость f3 от f2', () => {
+            expect(f3.getValue()(5, 6)).toBe(4);
+        })
 
-    //     test('Зависимость f4 от f3', () => {
-    //         expect(f3.getValue()(7, 8)).toBe(16);
-    //     })
+        test('Зависимость f4 от f3', () => {
+            expect(f4.getValue()(7, 8)).toBe(16);
+        })
     
-    //     test('Зависимость f4 от f3 с другими аргументами', () => {
-    //         expect(f2.getValue()(9, 10)).toBe(24);
-    //     })
+        test('Зависимость f4 от f3 с другими аргументами', () => {
+            expect(f4.getValue()(9, 10)).toBe(24);
+        })
     
-    //     const fNew = (a, b) => a * b + 2;
-    //     f1.update(fNew);
+        test('Обновление f1', () => {
+            const fNew = (a, b) => a * b + 2;
+            f1.update(fNew);
+
+            expect(f1.getValue()(2, 4)).toBe(10);
+        });
     
-    //     test('Обновление f1', () => {
-    //         expect(f1.getValue()(2, 4)).toBe(10);
-    //     });
-    
-    //     test('Обновление f4 после обновления f1', () => {
-    //         expect(f4.getValue()(9, 10)).toBe(168);
-    //     })
+        test('Обновление f4 после обновления f1', () => {
+            expect(f4.getValue()(9, 10)).toBe(168);
+        })
     // })
 
     // describe('Цепочка правила зависимости', () => {

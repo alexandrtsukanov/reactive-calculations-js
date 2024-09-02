@@ -1,8 +1,52 @@
 import {Reactive, createDependencyChain, DependencyOptions} from "../reactive";
+import { pipe } from "../utils/pipe";
 
 class FunctionReactive extends Reactive<Function> {
     getValue() {
         return this.value ?? (() => {});
+    }
+
+    update(newValue: Function) {
+        if (this.value === null) {
+            return;
+        }
+        
+        if (this.isDependent() && this.isStrict) {
+            return;
+        }
+
+        this.value = newValue;
+
+        this.updateDepsFns();
+    }
+
+    private updateDepsFns() {
+        const queue = Array.from(this.getDeps());
+        let cursor = 0;
+
+        while (cursor < queue.length) {
+            const reactive = queue[cursor] as FunctionReactive;
+            const {rules} = reactive;
+
+            if (!reactive.isEmptyDep()) {
+                reactive.updateDepFn(
+                    this.value ??  (() => {}),
+                    rules
+                );
+            }
+
+            const dependencies = reactive.getDeps();
+
+            dependencies.forEach(dep => {
+                queue.push(dep);
+            })
+
+            cursor += 1;
+        }
+    }
+
+    updateDepFn(valueFn: Function, callbacks: ((...args: any[]) => any)[]) {
+        this.value = pipe([valueFn, ...callbacks]);
     }
 
     depend(callback:  (...args: any[]) => any, options?: DependencyOptions) {
@@ -17,15 +61,6 @@ class FunctionReactive extends Reactive<Function> {
                 Item depends on ${this.closestNonEmptyParents.length} items, but you passed ${callback.length} arguments.
                 Amount of arguments of dependency callback must be equal to amount of items this item depends on
             `);
-        }
-
-        const pipe = fns => (...args) => {
-            const firstFn = fns[0];
-            const firstResult = firstFn(...args);
-
-            return fns
-                .slice(1)
-                .reduce((res, fn) => fn(res), firstResult)
         }
 
         this.rules.push(callback);

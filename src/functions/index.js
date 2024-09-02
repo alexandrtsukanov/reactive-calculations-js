@@ -32,9 +32,56 @@ var FunctionReactive = /** @class */ (function (_super) {
     function FunctionReactive() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    // deps: FunctionReactive[];
+    // rules: ((...args: any[]) => any)[];
+    // constructor(value: Function | null = null) {
+    //     super();
+    //     this.deps = [];
+    //     this.rules = [];
+    // }
     FunctionReactive.prototype.getValue = function () {
         var _a;
         return (_a = this.value) !== null && _a !== void 0 ? _a : (function () { });
+    };
+    FunctionReactive.prototype.update = function (newValue) {
+        if (this.value === null) {
+            return;
+        }
+        if (this.isDependent() && this.isStrict) {
+            return;
+        }
+        this.value = newValue;
+        this.updateDepsFns();
+    };
+    FunctionReactive.prototype.updateDepsFns = function () {
+        var queue = Array.from(this.getDeps());
+        var cursor = 0;
+        while (cursor < queue.length) {
+            var reactive = queue[cursor];
+            var rules = reactive.rules;
+            if (!reactive.isEmptyDep()) {
+                reactive.updateDepFn(this.value, rules);
+            }
+            var dependencies = reactive.getDeps();
+            dependencies.forEach(function (dep) {
+                queue.push(dep);
+            });
+            cursor += 1;
+        }
+    };
+    FunctionReactive.prototype.updateDepFn = function (fn, callbacks) {
+        var pipe = function (fns) { return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            var firstFn = fns[0];
+            var firstResult = firstFn.apply(void 0, args);
+            return fns
+                .slice(1)
+                .reduce(function (res, fn) { return fn(res); }, firstResult);
+        }; };
+        this.value = pipe(__spreadArray([fn !== null && fn !== void 0 ? fn : (function () { })], callbacks, true));
     };
     FunctionReactive.prototype.depend = function (callback, options) {
         var isStrict = (options !== null && options !== void 0 ? options : {}).isStrict;
