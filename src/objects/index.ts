@@ -4,7 +4,7 @@ interface Object {
     [key: string]: any  
 }
 
-type MapObject<T> = (key: string | Symbol, value: T) => [string, T];
+type MapObject<T> = (key: string, value: T) => [string, T];
 type FlatMapObject = (obj: Object) => Object;
 
 class ObjectReactive extends Reactive<Object> {
