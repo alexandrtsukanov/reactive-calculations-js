@@ -6,7 +6,7 @@
 
 ### Старт
 
-Установить репозитторий, команды:
+Установить репозиторий, команды:
 ```
 git clone https://github.com/alexandrtsukanov/reactive-calculations-js.git
 npm install
