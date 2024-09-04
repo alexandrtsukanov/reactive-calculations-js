@@ -113,7 +113,7 @@ const g = fromNum(f).depend((valA, b) => valA + b + 7);
 `closestNonEmptyParents` - список ближайших сверху в цепочке родителей с непустой зависимостью.\
 `isStrict` - строгая ли зависимость.\
 
-Методы:
+Методы:\
 `getValue` - получение значения.\
 `depend(callback: Function, options?: {isStrict: boolean})` - инициализация правила зависимости.\
 `dependsOn(...reactives: Reactive[])` - инициализация зависмости в рандомный момент.\
