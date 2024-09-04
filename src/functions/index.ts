@@ -9,11 +9,11 @@ class FunctionReactive extends Reactive<Function> {
         this.rules = [];
     }
 
-    getValue() {
+    getFn() {
         return this.value ?? (() => {});
     }
 
-    update(newValue: Function) {
+    updateFn(newValue: Function) {
         if (this.value === null) {
             return;
         }
@@ -58,7 +58,7 @@ class FunctionReactive extends Reactive<Function> {
         this.value = pipe([valueFn, ...callbacks]);
     }
 
-    depend(callback:  (...args: any[]) => any, options?: DependencyOptions) {
+    dependFn(callback:  (...args: any[]) => any, options?: DependencyOptions) {
         const {isStrict} = options ?? {};
 
         if (isStrict !== undefined) {
