@@ -134,7 +134,7 @@ describe('Числа', () => {
         });
     });
 
-    describe('Освобождение от зависимостей со стороны зависимогоб не ломается', () => {
+    describe('Освобождение от зависимостей со стороны зависимого, не ломается', () => {
         const a = createNum(3);
         const b = createNum(7);
         const c = createNum(9);
@@ -149,6 +149,64 @@ describe('Числа', () => {
             c.break(b)
 
             expect(c.getValue()).toBe(9);
+        });
+    });
+
+    describe('Освобождение от всех зависимостей со стороны родителя', () => {
+        const a = createNum(10);
+        const b = fromNum(a).depend(value => value * 2);
+        const c = fromNum(a).depend(value => value + 2);
+        const d = fromNum(a).depend(value => value - 2);
+
+        test('b, c и d зависят от a', () => {
+            expect(b.getValue()).toBe(20);
+            expect(c.getValue()).toBe(12);
+            expect(d.getValue()).toBe(8);
+        });
+    
+        test('b, c и d обновляются после обновления a', () => {
+            a.update(20);
+
+            expect(b.getValue()).toBe(40);
+            expect(c.getValue()).toBe(22);
+            expect(d.getValue()).toBe(18);
+        });
+
+        test('b, c и d не зависят от a', () => {
+            a.freeAll();
+            a.update(30);
+
+            expect(b.getValue()).toBe(40);
+            expect(c.getValue()).toBe(22);
+            expect(d.getValue()).toBe(18);
+        });
+    });
+
+    describe('Освобождение от всех зависимостей со стороны зависимого', () => {
+        const a = createNum(1);
+        const b = createNum(2);
+        const c = createNum(3);
+        const d = fromNum(a, b, c).depend((a, b, c) => (a + b + c) * 10);
+
+        test('d зависит от a, b и с', () => {
+            expect(d.getValue()).toBe(60);
+        });
+    
+        test('d обновляется после обновления a, b и с', () => {
+            a.update(4);
+            c.update(6);
+
+            expect(d.getValue()).toBe(120);
+        });
+
+        test('d не зависит от a, b и с', () => {
+            d.breakAll();
+
+            a.update(10);
+            b.update(20);
+            c.update(30);
+
+            expect(d.getValue()).toBe(120);
         });
     });
 

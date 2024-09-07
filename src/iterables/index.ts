@@ -1,4 +1,4 @@
-import { ArrayMethod } from "../arrays";
+import { MapArray, FilterArray } from "../arrays";
 import { DependencyOptions, Reactive, createDependencyChain } from "../reactive";
 
 class IterableReactive extends Reactive<Iterable<any>> {
@@ -6,30 +6,65 @@ class IterableReactive extends Reactive<Iterable<any>> {
         return (this.value ?? [])[Symbol.iterator]();
     }
 
-    map(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    map(callback: MapArray<any>, options?: DependencyOptions) {
         this.checkDeps();
 
+        function mapIterator(iterable) {
+            const iterator = iterable[Symbol.iterator]();
+            let current = iterator.next();
+            
+            return {
+                [Symbol.iterator]() {
+                    return this;
+                },
+                next() {
+
+                    if(current.done) {
+                        return current;
+                    }
+                    
+                    const saved = current;
+                    current = iterator.next();
+
+                    return {done: false, value: callback(saved.value)};
+                },
+            }
+        }
+
         return this.depend(
-            (prevIterator) => {
-                const arr = [...prevIterator].map(callback);
-                const iterator = arr[Symbol.iterator]();
-                
-                return iterator;
-            },
+            (prevIterator) => mapIterator(prevIterator),
             options,
         );
     }
 
-    filter(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    filter(callback: FilterArray<any>, options?: DependencyOptions) {
         this.checkDeps();
+
+        function filterIterator(iterable) {
+            const iterator = iterable[Symbol.iterator]();
+            
+            return {
+                [Symbol.iterator]() {
+                    return this;
+                },
+                next() {
+                    let current = iterator.next();
+
+                    if(current.done) {
+                        return current;
+                    }
+
+                    while (!callback(current.value)) {
+                        current = iterator.next();
+                    }
+
+                    return current;
+                },
+            }
+        }
         
         return this.depend(
-            (prevIterator) => {
-                const arr = [...prevIterator].filter(callback);
-                const iterator = arr[Symbol.iterator]();
-                
-                return iterator;
-            },
+            (prevIterator) => filterIterator(prevIterator),
             options,
         );
     }
@@ -37,13 +72,33 @@ class IterableReactive extends Reactive<Iterable<any>> {
     reverse(options?: DependencyOptions) {
         this.checkDeps();
         
+        function reverseIterator(iterable) {
+            const array = Array.from(iterable);
+            let len = array.length;
+            let i = 0;
+
+            return {
+                [Symbol.iterator]() {
+                    return this;
+                },
+                next() {
+                    if(i >= len) {
+                        return {done: true, value: undefined};
+                    }
+
+                    const savedI = i;
+                    i += 1;
+
+                    return {
+                        done: false,
+                        value: array[len - savedI - 1]
+                    }
+                },
+            }
+        }
+        
         return this.depend(
-            (prevIterator) => {
-                const arr = [...prevIterator].reverse();
-                const iterator = arr[Symbol.iterator]();
-                
-                return iterator;
-            },
+            (prevIterator) => reverseIterator(prevIterator),
             options,
         );
     }
