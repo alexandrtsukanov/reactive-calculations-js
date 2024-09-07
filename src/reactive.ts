@@ -119,12 +119,28 @@ export class Reactive<T> {
         })
     }
 
+    freeAll() {
+        this.getDeps().forEach(dep => {
+            dep.getParents().delete(this);
+        })
+
+        this.deps = new Set();
+    }
+
     break(...reactives: Reactive<T>[]) {
         reactives.forEach(reactive => {
             this.parents.delete(reactive);
 
             reactive.getDeps().delete(this);
         })
+    }
+
+    breakAll() {
+        this.getParents().forEach(parent => {
+            parent.getDeps().delete(this);
+        })
+
+        this.parents = new Set();
     }
 
     isDependent() {

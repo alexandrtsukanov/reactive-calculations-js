@@ -1,10 +1,11 @@
 import {Reactive, DependencyOptions, createDependencyChain} from '../reactive';
 
-export type ArrayMethod<T> = (value: T) => T;
+export type MapArray<T> = (value: T) => T;
+export type FilterArray<T> = (value: T) => boolean;
 type FlatMapArray<T> = (this: undefined, value: T) => Array<T>;
 
 class ArrayReactive extends Reactive<Array<any>> {
-    map(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    map(callback: MapArray<any>, options?: DependencyOptions) {
         this.checkDeps();
 
         return this.depend(
@@ -13,7 +14,7 @@ class ArrayReactive extends Reactive<Array<any>> {
         );
     }
 
-    filter(callback: ArrayMethod<any>, options?: DependencyOptions) {
+    filter(callback: FilterArray<any>, options?: DependencyOptions) {
         this.checkDeps();
         
         return this.depend(
